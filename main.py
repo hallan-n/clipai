@@ -1,39 +1,75 @@
-import random
+import asyncio
+import whisper
+from sentence_transformers import SentenceTransformer, util
+import json
+from cache import get, add
 
-segments = [
-    {"index": 0, "start": 0.0,  "end": 20.0,  "text": "Introdução ao tema, poucas novidades aqui."},
-    {"index": 1, "start": 20.0, "end": 40.0,  "text": "Explicando a técnica: isso parece chato, mas olha isso! funciona bem."},
-    {"index": 2, "start": 40.0, "end": 60.0,  "text": "Exemplo prático com números: veja os resultados impressionantes."},
-    {"index": 3, "start": 60.0, "end": 80.0,  "text": "Momento engraçado, risada da audiência! isso quebrou tudo."},
-    {"index": 4, "start": 80.0, "end": 100.0, "text": "Resumo e call-to-action: inscreva-se e ative as notificações!"}
-]
+MIN_SEGMENT = 120  # segundos
+THRESHOLD = 0.4 # similaridade — quanto menor, mais cortes
 
-# ---------- 2) HEURÍSTICA DE RELEVÂNCIA ----------
-KEYWORDS = ["olha", "importante", "risada", "insight", "mudar",
-            "incrível", "resultados", "call-to-action", "inscreva", "!"]
+async def get_video_transcribe(video_path: str):
+    transcribe = await get('video_transcribe')
+    if transcribe:
+        return json.loads(transcribe)
+    
+    model = whisper.load_model("small")
+    result = model.transcribe(video_path, fp16=False) 
 
-def heuristic_score(text: str) -> float:
-    text_lower = text.lower()
-    score = 0.0
-    for kw in KEYWORDS:
-        if kw in text_lower:
-            score += 1.4
-    score += len(text_lower.split()) * 0.04
-    if "!" in text:
-        score += 0.6
-    score += random.uniform(-0.2, 0.3)
-    return round(score, 3)
+    await add('video_transcribe', json.dumps(result))
+    return result
 
-# Calcula o score de cada segmento
-for seg in segments:
-    seg["score"] = heuristic_score(seg["text"])
+def get_highlights(transcribe: dict):
+    texts = [d["text"] for d in transcribe]
+    times = [(d["start"], d["end"]) for d in transcribe]
 
-# ---------- 3) SELECIONA TOP HIGHLIGHTS ----------
-TOP_K = 3
-highlights = sorted(segments, key=lambda s: s["score"], reverse=True)[:TOP_K]
+    model = SentenceTransformer("all-MiniLM-L6-v2")
 
-# ---------- 4) RESULTADO ----------
-print("=== SEGMENTOS ORDENADOS POR RELEVÂNCIA ===")
-for h in highlights:
-    print(f"Index: {h['index']} | Start-End: {h['start']}-{h['end']} | Score: {h['score']}")
-    print(f"Text: {h['text']}\n")
+    # Junta blocos de ~2 minutos
+    BLOCK_SIZE = 120
+    blocks = []
+    current_text, current_start = "", times[0][0]
+
+    for i, (start, end) in enumerate(times):
+        current_text += " " + texts[i]
+        if end - current_start >= BLOCK_SIZE:
+            blocks.append((current_start, end, current_text.strip()))
+            current_start = end
+            current_text = ""
+
+    # adiciona último bloco
+    if current_text:
+        blocks.append((current_start, times[-1][1], current_text.strip()))
+
+    block_texts = [b[2] for b in blocks]
+    embeddings = model.encode(block_texts, convert_to_tensor=True)
+
+    similarities = [
+        util.cos_sim(embeddings[i], embeddings[i + 1]).item()
+        for i in range(len(embeddings) - 1)
+    ]
+
+    cuts = [
+        blocks[i][1]
+        for i, sim in enumerate(similarities)
+        if sim < THRESHOLD
+    ]
+
+    segments = []
+    start = 0.0
+    for cut in cuts:
+        if cut - start >= MIN_SEGMENT:
+            segments.append((start, cut))
+            start = cut
+
+    if blocks and blocks[-1][1] - start >= 10:
+        segments.append((start, blocks[-1][1]))
+
+    return segments
+
+async def main():
+    video_path = 'C:/Users/Neves Sena/Documents/projects/clipai/videoplayback.mp4'
+    transcribe = await get_video_transcribe(video_path)
+    segments = get_highlights(transcribe['segments'])
+    print(segments)
+
+asyncio.run(main())
