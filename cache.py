@@ -1,19 +1,9 @@
-from redis.asyncio import Redis
-from contextlib import asynccontextmanager
+import redis
 
+redis_client = redis.Redis(host="localhost", port=6379, decode_responses=True)
 
-@asynccontextmanager
-async def get_redis():
-    redis = Redis(host="localhost", port=6379, decode_responses=True)
-    try:
-        yield redis
-    finally:
-        await redis.aclose()
+def add(key: str, value: str, ttl: int = None) -> bool:
+    return redis_client.set(name=key, value=value, ex=ttl)
 
-async def add(key: str, value: str, ttl: int = None) -> bool:
-    async with get_redis() as redis:
-        return await redis.set(key, value, ex=ttl)
-
-async def get(key: str) -> str | None:
-    async with get_redis() as redis:
-        return await redis.get(key)
+def get(key: str) -> str | None:
+    return redis_client.get(key)
