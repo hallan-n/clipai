@@ -73,4 +73,11 @@ async def main():
     segments = get_highlights(transcribe['segments'])
     print(segments)
 
+    previews = preview_summary(transcribe['segments'], segments, top_k=5)
+    
+    for p in previews:
+        dur = (p['end'] - p['start']) / 60
+        print(f"[{p['start']:.0f}s → {p['end']:.0f}s | {dur:.1f} min] → {p['preview']}")
+
+        
 asyncio.run(main())

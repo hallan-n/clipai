@@ -1,36 +1,29 @@
-# from transformers import pipeline
+from sklearn.feature_extraction.text import TfidfVectorizer
+import numpy as np
 
-# # cria o pipeline de sumarização
-# summarizer = pipeline("summarization", model="sshleifer/distilbart-cnn-12-6")
+def preview_summary(transcribe, segments, top_k=5):
+    """
+    Retorna uma frase curta representando cada segmento,
+    baseada nas palavras mais relevantes do trecho.
+    """
+    seg_texts = []
+    for start, end in segments:
+        text = " ".join(d["text"] for d in transcribe if start <= d["start"] < end)
+        seg_texts.append(text)
 
-# def summarize_segments(transcribe, segments):
-#     results = []
-#     segs = transcribe["segments"]
+    # TF-IDF para extrair palavras-chave
+    vectorizer = TfidfVectorizer(max_features=top_k, stop_words="portuguese")
+    tfidf_matrix = vectorizer.fit_transform(seg_texts)
+    feature_names = np.array(vectorizer.get_feature_names_out())
 
-#     for (start, end) in segments:
-#         # junta os textos que estão dentro do intervalo de tempo
-#         text = " ".join(
-#             d["text"] for d in segs
-#             if start <= d["start"] < end
-#         )
-
-#         if not text.strip():
-#             continue
-
-#         # evita texto muito longo (máx. 2000 caracteres)
-#         input_text = text[:2000]
-
-#         summary = summarizer(
-#             input_text,
-#             max_length=120,
-#             min_length=30,
-#             do_sample=False
-#         )[0]["summary_text"]
-
-#         results.append({
-#             "start": start,
-#             "end": end,
-#             "summary": summary
-#         })
-
-#     return results
+    previews = []
+    for i in range(len(seg_texts)):
+        # pega palavras mais relevantes
+        sorted_idx = np.argsort(tfidf_matrix[i].toarray()).flatten()[::-1]
+        keywords = feature_names[sorted_idx[:top_k]]
+        previews.append({
+            "start": segments[i][0],
+            "end": segments[i][1],
+            "preview": ", ".join(keywords)
+        })
+    return previews
