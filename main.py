@@ -4,8 +4,11 @@ from sentence_transformers import SentenceTransformer, util
 import json
 from cache import get, add
 
-MIN_SEGMENT = 120  # segundos
-THRESHOLD = 0.4 # similaridade — quanto menor, mais cortes
+MIN_SEGMENT = 300      # mínimo 5 min
+THRESHOLD = 0.7        # sensibilidade média
+BLOCK_SIZE = 750       # blocos de ~12,5 min
+
+
 
 async def get_video_transcribe(video_path: str):
     transcribe = await get('video_transcribe')
@@ -23,9 +26,7 @@ def get_highlights(transcribe: dict):
     times = [(d["start"], d["end"]) for d in transcribe]
 
     model = SentenceTransformer("all-MiniLM-L6-v2")
-
-    # Junta blocos de ~2 minutos
-    BLOCK_SIZE = 120
+      
     blocks = []
     current_text, current_start = "", times[0][0]
 
