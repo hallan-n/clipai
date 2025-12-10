@@ -1,0 +1,21 @@
+version: "3.9"
+
+services:
+  whisper:
+    build: .
+    container_name: whisper
+    # Monta a pasta de dados (áudios) e a pasta do código
+    volumes:
+      - ./data:/data       # onde estão os WAVs gerados pelo FFmpeg
+      - ./app:/app         # código Python (main.py, logger_config.py, etc.)
+    working_dir: /app       # diretório de trabalho dentro do container
+    command: ["python", "main.py"]  # executa a transcrição automaticamente ao rodar
+    tty: true
+
+
+  ffmpeg:
+    image: jrottenberg/ffmpeg:5.1-ubuntu2204
+    container_name: ffmpeg
+    volumes:
+      - ./data:/data
+    entrypoint: ["tail", "-f", "/dev/null"]
