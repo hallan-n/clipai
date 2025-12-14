@@ -1,7 +1,7 @@
 from fastapi import FastAPI, UploadFile, File, HTTPException
 import tempfile
 import os
-from transcribe import identify_format, extract_audio_pipe, get_transcribe_from_bytes, get_transcribre_from_path
+from transcribe import trancribe
 
 
 app = FastAPI()
@@ -14,19 +14,10 @@ async def transcribe(file: UploadFile = File(...)):
         tmp.write(await file.read())
         tmp_path = tmp.name
 
-    file_type = identify_format(tmp_path)
     try:
-        if file_type == "video":
-            audio_bytes = extract_audio_pipe(tmp_path)
-            result = get_transcribe_from_bytes(audio_bytes)
-
-        elif file_type == "audio":
-            return get_transcribre_from_path(tmp_path)
-
-        else:
-            raise HTTPException(400, "Formato não suportado")
-
-        return {"segments": result}
+        return {"segments": trancribe(tmp_path)}
+    except Exception as e:
+        raise HTTPException(400, str(e))
 
     finally:
         os.remove(tmp_path)

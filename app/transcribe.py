@@ -9,7 +9,7 @@ model = WhisperModel(
     compute_type="int8"
 )
 
-def identify_format(file: str) -> str | None:
+def _identify_format(file: str) -> str | None:
     AUDIO_FORMATS = [
         "aac", "ac3", "eac3", "alac", "amr", "ape", "au",
         "caf", "dts", "flac", "m4a", "mka", "mp2", "mp3",
@@ -32,7 +32,7 @@ def identify_format(file: str) -> str | None:
         return None
 
 
-def get_transcribe_from_bytes(audio_bytes: bytes) -> list[dict]:
+def _get_transcribe_from_bytes(audio_bytes: bytes) -> list[dict]:
     audio, sr = sf.read(io.BytesIO(audio_bytes), dtype="float32")
 
     segments, _ = model.transcribe(
@@ -49,7 +49,7 @@ def get_transcribe_from_bytes(audio_bytes: bytes) -> list[dict]:
         for seg in segments
     ]
 
-def get_transcribre_from_path(file_path: str):
+def _get_transcribre_from_path(file_path: str):
     segments, _ = model.transcribe(file_path, language="pt")
     return [
         {
@@ -60,7 +60,7 @@ def get_transcribre_from_path(file_path: str):
         for seg in segments
     ]
 
-def extract_audio_pipe(video_path: str) -> bytes:
+def _extract_audio_pipe(video_path: str) -> bytes:
     cmd = [
         "ffmpeg",
         "-y",
@@ -84,3 +84,16 @@ def extract_audio_pipe(video_path: str) -> bytes:
     audio_bytes = proc.stdout.read()
     proc.wait()
     return audio_bytes
+
+
+def trancribe(path: str):
+    file_type = _identify_format(path)
+    if file_type == "video":
+        audio_bytes = _extract_audio_pipe(path)
+        return _get_transcribe_from_bytes(audio_bytes)
+
+    elif file_type == "audio":
+        return _get_transcribre_from_path(path)
+
+    else:
+        raise ValueError("Formato não suportado")
