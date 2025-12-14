@@ -13,9 +13,13 @@ async def transcribe(file: UploadFile = File(...)):
     with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
         tmp.write(await file.read())
         tmp_path = tmp.name
-
+        
     try:
-        return {"segments": trancribe(tmp_path)}
+        import json
+        transc = trancribe(tmp_path)
+        with open("./saida.json", 'w', encoding='utf-8') as doc:
+            doc.write(json.dumps(transc, indent=4))
+        return {"segments": transc}
     except Exception as e:
         raise HTTPException(400, str(e))
 

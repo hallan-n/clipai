@@ -1,9 +1,22 @@
-version: '3'
+version: "3.9"
+
 services:
-  app:
-    build: .
+  ollama:
+    image: ollama/ollama
+    container_name: ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
     volumes:
-      - ./app:/app
-      - ./data:/data
-    working_dir: /app
-    command: python app/main.py
+      - ollama:/root/.ollama
+    environment:
+      - OLLAMA_NUM_THREADS=4
+    command: >
+      sh -c "
+      ollama serve &
+      sleep 5 &&
+      ollama pull mistral:7b &&
+      wait
+      "
+volumes:
+  ollama:
