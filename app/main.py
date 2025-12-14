@@ -1,50 +1,36 @@
-from faster_whisper import WhisperModel
-import subprocess
-
-model = WhisperModel(
-    "tiny",
-    device="cpu",
-    compute_type="int8"
-)
-
-def get_transcribe(path: str) -> list[dict]:
-    segments, _ = model.transcribe(path, language="pt")
-
-    return [
-        {
-            "text": seg.text.strip(),
-            "start": seg.start,
-            "end": seg.end
-        }
-        for seg in segments
-    ]
+from fastapi import FastAPI, UploadFile, File, HTTPException
+import tempfile
+import os
+from transcribe import identify_format, extract_audio_pipe, get_transcribe_from_bytes, get_transcribre_from_path
 
 
+app = FastAPI()
 
-def extract_audio(video_path: str, audio_path: str):
-    subprocess.run(
-        [
-            "ffmpeg",
-            "-y",
-            "-i", video_path,
-            "-vn",
-            "-ac", "1",
-            "-ar", "16000",
-            audio_path
-        ],
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
-        check=True
-    )
+@app.post("/transcribe")
+async def transcribe(file: UploadFile = File(...)):
+    suffix = os.path.splitext(file.filename)[1].lower()
 
+    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+        tmp.write(await file.read())
+        tmp_path = tmp.name
+
+    file_type = identify_format(tmp_path)
+    try:
+        if file_type == "video":
+            audio_bytes = extract_audio_pipe(tmp_path)
+            result = get_transcribe_from_bytes(audio_bytes)
+
+        elif file_type == "audio":
+            return get_transcribre_from_path(tmp_path)
+
+        else:
+            raise HTTPException(400, "Formato não suportado")
+
+        return {"segments": result}
+
+    finally:
+        os.remove(tmp_path)
 
 if __name__ == "__main__":
-    from datetime import datetime, timedelta
-
-    start = datetime.now()
-    extract_audio("./video.mp4", "./audio.wav")
-    get_transcribe("./audio.wav")
-
-    end = datetime.now()
-
-    print((end - start).total_seconds())
+    import uvicorn
+    uvicorn.run(app='main:app', host='0.0.0.0', port=8000, reload=True)
