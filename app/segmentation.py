@@ -1,5 +1,4 @@
-from ollama import ask_llm_change
-
+from app.services.ollama import ask_ollama
 
 def group_segments(segments: list, block_sec: int = 120):
     blocks = []
@@ -32,7 +31,7 @@ def find_cuts(blocks, min_sec=420, max_sec=1200):
         block_duration = block[-1]["end"] - block[0]["start"]
         acc_duration += block_duration
 
-        changed = ask_llm_change(last_block_text, block_text)
+        changed = ask_ollama(prompt, [last_block_text, block_text])
         
         if (changed and acc_duration >= min_sec) or acc_duration >= max_sec:
             cuts.append({
@@ -50,16 +49,3 @@ def find_cuts(blocks, min_sec=420, max_sec=1200):
     })
 
     return cuts
-
-
-
-import json
-with open('./saida.json', 'r') as doc:
-    content = doc.read()
-
-data = json.loads(content)
-groups = group_segments(data)
-custs = find_cuts(groups)
-breakpoint()
-
-

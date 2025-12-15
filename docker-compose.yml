@@ -11,12 +11,6 @@ services:
       - ollama:/root/.ollama
     environment:
       - OLLAMA_NUM_THREADS=4
-    command: >
-      sh -c "
-      ollama serve &
-      sleep 5 &&
-      ollama pull mistral:7b &&
-      wait
-      "
+ 
 volumes:
   ollama:
