@@ -31,14 +31,11 @@ def index():
 
 
     with ui.column().classes('w-full max-w-6xl mx-auto gap-6 p-6'):
-        ui.label('YouTube Smart Cutter (Dark Mode)').classes('text-3xl font-bold')
+        ui.label('ClipAI').classes('text-3xl font-bold underline')
         ui.label('Send a YouTube link and let the AI split it into meaningful segments').classes('text-gray-500')
 
-        # =============================
-        # INPUT CARD
-        # =============================
         with ui.card().classes('w-full p-4'):
-            with ui.row().classes('w-full items-end gap-4'):
+            with ui.row().classes('w-full items-center gap-4'):
                 url_input = ui.input(
                     label='YouTube Video URL',
                     placeholder='https://www.youtube.com/watch?v=...'
@@ -59,9 +56,7 @@ def index():
 
                 ui.button('Analyze Video', icon='smart_toy', on_click=load_video)
 
-        # =============================
-        # VIDEO INFO
-        # =============================
+
         with ui.card().classes('w-full p-4'):
             with ui.row().classes('w-full gap-6'):
                 with ui.column().classes('flex-1 gap-1'):
@@ -71,9 +66,6 @@ def index():
                     channel_title = ui.markdown()
                 thumbnail = ui.image('').classes('rounded-lg w-96')
 
-        # =============================
-        # CUTS
-        # =============================
         ui.label('Detected Cuts').classes('text-xl font-semibold mt-4')
 
         cuts_container = ui.column().classes('w-full gap-4')
