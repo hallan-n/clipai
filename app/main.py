@@ -4,7 +4,7 @@ from interfaces.api.trancrible import route
 
 app = FastAPI()
 
-app.include_router(route)
+app.include_router(route, prefix='/api')
 init(app)
 
 

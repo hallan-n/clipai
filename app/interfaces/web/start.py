@@ -1,12 +1,11 @@
 from fastapi import FastAPI
 from nicegui import ui
-import interfaces.web.home
+import interfaces.web.pages
 
 def init(fastapi_app: FastAPI) -> None:
     ui.run_with(
         fastapi_app,
-        mount_path="/web",
-        title="Casamento",
+        mount_path="/",
+        title="ClipAI",
         language='pt-BR',
-        favicon="app/web/assets/favicon.svg",
     )

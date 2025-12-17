@@ -1,6 +1,6 @@
 import tempfile
 from yt_dlp import YoutubeDL
-from logger import logger
+from services.logger import logger
 
 def download_audio_temp(video_url: str, format: str = "mp3") -> str | None:
     suffix = f".{format.lower()}"
@@ -39,7 +39,6 @@ def fetch_video_ytdlp(video_url: str) -> dict:
 
     with YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(video_url, download=False)
-
     return {
         "video_id": info.get("id"),
         "title": info.get("title"),
@@ -51,5 +50,5 @@ def fetch_video_ytdlp(video_url: str) -> dict:
         "comments": info.get("comment_count"),
         "channel_id": info.get("channel_id"),
         "channel_title": info.get("uploader"),
-        "source": "ytdlp",
+        "thumbnail": info.get('thumbnail')
     }
