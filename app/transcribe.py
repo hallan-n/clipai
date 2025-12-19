@@ -97,3 +97,5 @@ def trancribe(path: str):
 
     else:
         raise ValueError("Formato não suportado")
+import json
+print(json.dumps(trancribe('/home/neves/Documentos/clipai/video.mp4'), indent=4))

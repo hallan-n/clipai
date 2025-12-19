@@ -1,5 +1,5 @@
 import requests
-from services.logger import logger
+from logger import logger
 
 def ask_ollama(prompt: str, params: list) -> bool:
     logger.info('Executando prompt junto ao Ollama AI.')
