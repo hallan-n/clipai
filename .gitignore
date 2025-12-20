@@ -4,3 +4,6 @@ __pycache__
 videoplayback.mp4
 C:\Users\Neves Sena\Documents\projects\clipai\videoplayback.mp4
 data
+.env
+audio_chunks
+*.json

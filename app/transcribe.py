@@ -1,101 +1,135 @@
-from faster_whisper import WhisperModel
+import os
+import glob
 import subprocess
-import io
-import soundfile as sf
+from faster_whisper import WhisperModel
+
+
+CHUNK_SECONDS = 180 
+SAMPLE_RATE = 16000
+CHANNELS = 1
+AUDIO_CODEC = "pcm_s16le"
+CHUNK_DIR = "audio_chunks"
+
 
 model = WhisperModel(
     "tiny",
     device="cpu",
-    compute_type="int8"
+    compute_type="int8",
+    cpu_threads=2           # NÃO use todos os cores
 )
 
-def _identify_format(file: str) -> str | None:
-    AUDIO_FORMATS = [
-        "aac", "ac3", "eac3", "alac", "amr", "ape", "au",
-        "caf", "dts", "flac", "m4a", "mka", "mp2", "mp3",
-        "ogg", "opus", "pcm", "ra", "tta", "voc",
-        "wav", "wma"
-    ]
+def identify_format(path: str) -> str | None:
+    AUDIO = {
+        "aac","flac","m4a","mp3","ogg","opus","wav","wma"
+    }
+    VIDEO = {
+        "mp4","mkv","mov","avi","webm","ts","mpeg","mpg"
+    }
 
-    VIDEO_FORMATS = [
-        "3gp", "avi", "asf", "flv", "mkv", "mov",
-        "mp4", "mpeg", "mpg", "m2ts", "mts", "ts",
-        "webm", "wmv", "vob", "rm", "rmvb",
-        "hls", "m3u8", "dash", "mpd"
-    ]
-    
-    if file.split('.')[-1] in AUDIO_FORMATS:
-        return 'audio'
-    elif file.split('.')[-1] in VIDEO_FORMATS:
-        return 'video'
-    else:
-        return None
+    ext = path.split(".")[-1].lower()
+    if ext in AUDIO:
+        return "audio"
+    if ext in VIDEO:
+        return "video"
+    return None
 
 
-def _get_transcribe_from_bytes(audio_bytes: bytes) -> list[dict]:
-    audio, sr = sf.read(io.BytesIO(audio_bytes), dtype="float32")
-
-    segments, _ = model.transcribe(
-        audio,
-        language="pt"
+def run_ffmpeg(cmd: list[str]):
+    subprocess.run(
+        cmd,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+        check=True
     )
 
-    return [
-        {
-            "text": seg.text.strip(),
-            "start": seg.start,
-            "end": seg.end
-        }
-        for seg in segments
-    ]
+def extract_audio_chunks(
+    video_path: str,
+    chunk_seconds: int = CHUNK_SECONDS,
+    out_dir: str = CHUNK_DIR
+):
+    os.makedirs(out_dir, exist_ok=True)
 
-def _get_transcribre_from_path(file_path: str):
-    segments, _ = model.transcribe(file_path, language="pt")
-    return [
-        {
-            "text": seg.text.strip(),
-            "start": seg.start,
-            "end": seg.end
-        }
-        for seg in segments
-    ]
+    # limpa chunks antigos
+    for f in glob.glob(f"{out_dir}/*.wav"):
+        os.remove(f)
 
-def _extract_audio_pipe(video_path: str) -> bytes:
     cmd = [
         "ffmpeg",
         "-y",
-        "-loglevel", "error",
         "-i", video_path,
-        "-map", "a:0", 
+        "-map", "a:0",
         "-vn",
-        "-ac", "1",
-        "-ar", "16000",
-        "-c:a", "pcm_s16le",
-        "-f", "wav",
-        "pipe:1", 
+        "-ac", str(CHANNELS),
+        "-ar", str(SAMPLE_RATE),
+        "-c:a", AUDIO_CODEC,
+        "-f", "segment",
+        "-segment_time", str(chunk_seconds),
+        os.path.join(out_dir, "chunk_%03d.wav"),
     ]
 
-    proc = subprocess.Popen(
-        cmd,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.DEVNULL,
-    )
-
-    audio_bytes = proc.stdout.read()
-    proc.wait()
-    return audio_bytes
+    run_ffmpeg(cmd)
 
 
-def trancribe(path: str):
-    file_type = _identify_format(path)
-    if file_type == "video":
-        audio_bytes = _extract_audio_pipe(path)
-        return _get_transcribe_from_bytes(audio_bytes)
+def transcribe_chunks(
+    chunk_dir: str = CHUNK_DIR,
+    chunk_seconds: int = CHUNK_SECONDS
+) -> list[dict]:
 
-    elif file_type == "audio":
-        return _get_transcribre_from_path(path)
+    results: list[dict] = []
+    offset = 0.0
 
-    else:
+    chunks = sorted(glob.glob(f"{chunk_dir}/*.wav"))
+
+    for idx, chunk_path in enumerate(chunks, 1):
+        print(f"🧠 Transcrevendo chunk {idx}/{len(chunks)}")
+
+        segments, _ = model.transcribe(
+            chunk_path,
+            language="pt",
+            vad_filter=True,
+            beam_size=1,
+            temperature=0.0,
+            condition_on_previous_text=False
+        )
+        
+        for seg in segments:
+            results.append({
+                "text": seg.text.strip(),
+                "start": round(seg.start + offset, 2),
+                "end": round(seg.end + offset, 2),
+            })
+
+        offset += chunk_seconds
+
+    return results
+
+
+def transcribe(path: str) -> list[dict]:
+    file_type = identify_format(path)
+
+    if not file_type:
         raise ValueError("Formato não suportado")
-import json
-print(json.dumps(trancribe('/home/neves/Documentos/clipai/video.mp4'), indent=4))
+
+    if file_type == "video":
+        print("🎬 Extraindo áudio em blocos...")
+        extract_audio_chunks(path)
+        return transcribe_chunks()
+
+    if file_type == "audio":
+        print("🎧 Transcrevendo áudio diretamente...")
+        segments, _ = model.transcribe(
+            path,
+            language="pt",
+            vad_filter=True
+        )
+        return [
+            {
+                "text": seg.text.strip(),
+                "start": round(seg.start, 2),
+                "end": round(seg.end, 2),
+            }
+            for seg in segments
+        ]
+
+
+print(transcribe('/home/neves/Documentos/clipai/downloads/WmnZB256B3w.mp4'))

@@ -1,51 +1,44 @@
+import json
+inp = {"dsadsa": "asdasd"}
+
 prompt = """
-Você é um analista de conteúdo político especializado em segmentação temática de discursos longos. Eu vou te fornecer a transcrição completa (com timestamps) de uma live de aproximadamente 2 horas. Essa live é dinâmica, com o orador mudando frequentemente de assunto (ex: Bolsonaro, Alexandre de Moraes, STF, MBL, eleições, mídia, etc.).
+Task: Segment a long political transcript into thematic cuts.
 
-Objetivo:
-Identificar cortes temáticos, onde cada corte representa um assunto central dominante.
+Rules:
+- A cut starts when a new dominant topic clearly begins.
+- A cut ends when the dominant topic clearly changes.
+- Ignore digressions under 2 minutes.
+- Min duration: 8 minutes.
+- Max duration: 30 minutes.
+- Topics may exceed 30 minutes if they remain coherent; split only if there is a clear internal topic change.
+- If a topic is shorter than 8 minutes, merge with the previous cut if thematically coherent.
 
-Regras de segmentação:
-- Um corte começa quando um novo assunto se torna claramente dominante.
-- Um corte termina quando há transição clara para outro assunto.
-- Assuntos podem ser politicamente relacionados, mas se o foco muda, é um novo corte.
-- Ignore pequenas digressões curtas (comentários de até aproximadamente 1–2 minutos).
-- Cada corte deve ter preferencialmente:
-  - Duração mínima: ~7 minutos
-  - Duração máxima: ~15 minutos
-- Se um assunto durar mais de 15 minutos, divida em dois cortes coerentes.
-- Se um assunto durar menos de 7 minutos, tente agrupar com o assunto anterior, se fizer sentido sem perder clareza temática.
+Topic change indicators:
+- Change of main subject or person.
+- Change of core political narrative or thesis.
+- Clear contextual shift.
 
-O que você deve analisar:
-- Mudança de foco discursivo
-- Mudança de personagens centrais (ex: sai Bolsonaro, entra Alexandre de Moraes)
-- Mudança de tese ou narrativa principal
-- Mudança clara de contexto político
+Output:
+Return ONLY a minified JSON array.
+Each item must follow exactly this structure:
+{{"start":int,"end":int,"topic":string}}
 
-Formato da resposta (obrigatório):
-Retorne apenas um JSON no seguinte formato:
-[
-  {
-    "start": 0,
-    "end": 540,
-    "topic": "Descrição do assunto central deste corte"
-  },
-  ...
-]
+No explanations.
+No markdown.
+No extra text.
 
-INPUT PARA A ANÁLISE:
-{}
-""".format()
+INPUT:
+
+{0}
+""".format([json.dumps(inp, separators=(",", ":"))])
 
 
 from openai import OpenAI
 import os
-client = OpenAI(
-    api_key="",
-    base_url="https://api.groq.com/openai/v1",
-)
+
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 response = client.responses.create(
+    model="gpt-5-nano",
     input=prompt,
-    model="openai/gpt-oss-20b",
 )
-print(response.output_text)
