@@ -1,3 +1,4 @@
+from fastapi.responses import FileResponse
 from ask_llm import ask_gpt
 from youtube import fetch_video_info
 from transcribe import transcribe
@@ -92,11 +93,18 @@ ENTRADA:
 """
     try:
         transc = transcribe(url)
-        response = ask_gpt(prompt,  [transc])
+        response = ask_gpt(prompt,  [json.dumps(transc, separators=(',', ':'))])
         return json.loads(response)
     except Exception as e:
         raise HTTPException(400, f'Erro ao transcrever vídeo: {e}')
 
+# @app.get('/teste')
+# def teste():
+#     return FileResponse(
+#         path='/home/neves/Documentos/clipai/cut.mp4',
+#         media_type="video/mp4",
+#         filename='TESTANDOOO'
+#     )
 
 if __name__ == "__main__":
     import uvicorn

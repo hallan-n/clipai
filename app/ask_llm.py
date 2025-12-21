@@ -38,6 +38,7 @@ def ask_gpt(prompt: str, params: list) -> bool:
         model="gpt-5-nano",
         input=prompt,
     )
+    response = response.to_dict()
 
     for value in response['output']:
         if 'content' in value.keys():
