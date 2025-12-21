@@ -106,3 +106,34 @@ def fetch_video_info(video_url: str) -> dict:
         "channel_title": info.get("uploader"),
         "thumbnail": info.get('thumbnail')
     }
+
+
+def download_video_temp(
+    video_url: str,
+    video_format: str = "mp4",
+    resolution: str = "best"
+) -> str | None:
+    suffix = f".{video_format.lower()}"
+    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
+        tmp_path = tmp.name
+
+    ydl_opts = {
+        "format": resolution,
+        "outtmpl": tmp_path.replace(suffix, ".%(ext)s"),
+        "merge_output_format": video_format.lower(),
+        "quiet": True,
+        "prefer_ffmpeg": True,
+    }
+
+    try:
+        logger.info(f"Iniciando download do vídeo {video_url}")
+        with YoutubeDL(ydl_opts) as ydl:
+            ydl.download([video_url])
+
+        final_path = tmp_path.replace(suffix, f".{video_format.lower()}")
+        logger.info(f"Download concluído: {final_path}")
+        return final_path
+
+    except Exception as e:
+        logger.error(f"Erro ao baixar vídeo: {e}")
+        return None
