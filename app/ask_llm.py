@@ -1,5 +1,7 @@
 import requests
 from logger import logger
+from openai import OpenAI
+from consts import OPENAI_API_KEY
 
 def ask_ollama(prompt: str, params: list) -> bool:
     logger.info('Executando prompt junto ao Ollama AI.')
@@ -24,4 +26,21 @@ def ask_ollama(prompt: str, params: list) -> bool:
     
     logger.info('Processamento finalizado.')
     return r.json()["response"]
+    
+
+def ask_gpt(prompt: str, params: list) -> bool:
+    logger.info('Executando prompt junto ao GPT AI.')
+    prompt = prompt.format(*params)
+    
+    client = OpenAI(api_key=OPENAI_API_KEY)
+
+    response = client.responses.create(
+        model="gpt-5-nano",
+        input=prompt,
+    )
+
+    for value in response['output']:
+        if 'content' in value.keys():
+            for c in value['content']:
+                return c['text']
     

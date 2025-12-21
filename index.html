@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
+
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+    <title>ClipAI</title>
+</head>
+
+<body class="bg-gray-900 min-h-screen w-screen text-gray-200">
+
+    <div class="max-w-[1200px] mx-auto p-4 space-y-4">
+
+        <!-- ANALISAR VIDEO -->
+        <div class="rounded-lg p-4 border-2 border-gray-700">
+            <h1 class="text-2xl font-bold underline mb-6">ClipAI</h1>
+
+            <div class="flex gap-2">
+                <input
+                    id="url_video"
+                    class="bg-gray-700 p-2 rounded-lg w-full"
+                    placeholder="https://www.youtube.com/watch?v=..."
+                    type="text" />
+
+                <button
+                    id= "analyze_button"
+                    onclick="getVideoInfo()"
+                    class="cursor-pointer bg-gray-700 px-4 hover:bg-gray-800 rounded-lg text-nowrap">
+                    Analisar vídeo
+                </button>
+            </div>
+        </div>
+
+        <!-- INFO VIDEO -->
+        <div class="rounded-lg p-4 border-2 border-gray-700 flex justify-between items-center gap-4">
+            <div>
+                <p><b>VIDEO ID:</b> <span id="video_id" class="text-gray-400"></span></p>
+                <p><b>TÍTULO:</b> <span id="title" class="text-gray-400"></span></p>
+                <p><b>PUBLICADO EM:</b> <span id="published_at" class="text-gray-400"></span></p>
+                <p><b>CANAL:</b> <span id="channel_title" class="text-gray-400"></span></p>
+
+                <button
+                    onclick="generateCuts()"
+                    class="bg-gray-700 mt-3 px-4 py-2 hover:bg-gray-800 rounded-lg">
+                    Gerar cortes
+                </button>
+            </div>
+
+            <img id="thumbnail" class="max-h-48 rounded-lg" />
+        </div>
+
+        <!-- CORTES -->
+         <div class="rounded-lg p-4 border-2 border-gray-700 space-y-4">
+
+                <button
+                    onclick="downloadCuts()"
+                    class="cursor-pointer bg-gray-700 mt-3 px-4 py-2 hover:bg-gray-800 rounded-lg">
+                    Baixar todos os cortes
+                </button>
+             <div
+                id="cuts_container"
+                class="rounded-lg p-4 border-2 border-gray-700 space-y-4">
+            </div>
+        </div>
+            
+    </div>
+
+<script>
+/* =================== ELEMENTOS =================== */
+const video_id = document.getElementById('video_id')
+const title = document.getElementById('title')
+const published_at = document.getElementById('published_at')
+const channel_title = document.getElementById('channel_title')
+const thumbnail = document.getElementById('thumbnail')
+const cutsContainer = document.getElementById('cuts_container')
+
+/* =================== HELPERS =================== */
+function formatDate(yyyymmdd) {
+    if (!yyyymmdd || yyyymmdd.length !== 8) return '-'
+    return `${yyyymmdd.slice(6,8)}/${yyyymmdd.slice(4,6)}/${yyyymmdd.slice(0,4)}`
+}
+
+function formatTime(seconds) {
+    const min = Math.floor(seconds / 60)
+    const sec = Math.floor(seconds % 60)
+    return `${min}:${sec.toString().padStart(2, '0')}`
+}
+
+/* =================== VIDEO INFO =================== */
+function loadVideoInfo(data) {
+    video_id.textContent = data.video_id
+    title.textContent = data.title
+    published_at.textContent = formatDate(data.published_at)
+    channel_title.textContent = data.channel_title
+    thumbnail.src = data.thumbnail
+}
+
+/* =================== API CALLS =================== */
+async function getVideoInfo() {
+    const analyze_button = document.getElementById('analyze_button')
+    analyze_button.textContent = 'Analisando...'
+    
+    const url = document.getElementById('url_video').value.trim()
+    if (!url) return alert('Informe a URL do vídeo')
+
+    const resp = await fetch(
+        `http://localhost:8000/video?url=${encodeURIComponent(url)}`
+    )
+
+    if (!resp.ok) {
+        alert('Erro ao buscar vídeo')
+        return
+    }
+
+    const data = await resp.json()
+    loadVideoInfo(data)
+    analyze_button.textContent = 'Analisar vídeo'
+}
+
+/* =================== CORTES =================== */
+async function generateCuts() {
+    if (!video_id.innerText) return alert('Analise um vídeo primeiro')
+
+    cutsContainer.innerHTML = '<p class="text-gray-400">Gerando cortes...</p>'
+
+    const resp = await fetch(
+        `http://localhost:8000/video/cuts?url=${encodeURIComponent(
+            'https://www.youtube.com/watch?v=' + video_id.innerText
+        )}`
+    )
+
+    if (!resp.ok) {
+        cutsContainer.innerHTML = '<p class="text-red-400">Erro ao gerar cortes</p>'
+        return
+    }
+
+    const cuts = await resp.json()
+    renderCuts(cuts)
+}
+
+function renderCuts(cuts) {
+    cutsContainer.innerHTML = ''
+
+    cuts.forEach((cut, index) => {
+        const div = document.createElement('div')
+
+        div.innerHTML = `
+            <div class="flex justify-between items-center">
+                <span class="font-semibold">Cut #${index + 1}</span>
+
+                <span class="text-sm bg-blue-100 text-blue-700 px-3 py-1 rounded-full">
+                    ${formatTime(cut.end - cut.start)}
+                </span>
+            </div>
+
+            <p class="text-gray-300">${cut.topic}</p>
+        `
+
+        cutsContainer.appendChild(div)
+    })
+}
+
+/* =================== DOWNLOAD (HOOK) =================== */
+function downloadCut(start, end) {
+    alert(`Download do corte: ${start}s → ${end}s`)
+    // aqui você liga com /video/cut/download
+}
+</script>
+
+</body>
+</html>
