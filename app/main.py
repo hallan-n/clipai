@@ -98,13 +98,16 @@ ENTRADA:
     except Exception as e:
         raise HTTPException(400, f'Erro ao transcrever vídeo: {e}')
 
-# @app.get('/teste')
-# def teste():
-#     return FileResponse(
-#         path='/home/neves/Documentos/clipai/cut.mp4',
-#         media_type="video/mp4",
-#         filename='TESTANDOOO'
-#     )
+@app.get('/video_full')
+def main(url: str):
+    if not url.startswith('https://www.youtube.com/watch?v'):
+        raise HTTPException(400, 'URL inválida')
+    
+    return FileResponse(
+        path='/home/neves/Documentos/clipai/cut.mp4',
+        media_type="video/mp4",
+        filename='TESTANDOOO'
+    )
 
 if __name__ == "__main__":
     import uvicorn
