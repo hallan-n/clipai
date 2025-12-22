@@ -108,32 +108,19 @@ def fetch_video_info(video_url: str) -> dict:
     }
 
 
-def download_video_temp(
-    video_url: str,
-    video_format: str = "mp4",
-    resolution: str = "best"
-) -> str | None:
-    suffix = f".{video_format.lower()}"
-    with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp:
-        tmp_path = tmp.name
+def download_video_temp(video_url: str) -> str:
+    temp_dir = tempfile.mkdtemp(prefix="video_")
+    output = os.path.join(temp_dir, "video.%(ext)s")
 
     ydl_opts = {
-        "format": resolution,
-        "outtmpl": tmp_path.replace(suffix, ".%(ext)s"),
-        "merge_output_format": video_format.lower(),
+        "format": "bestvideo+bestaudio/best",
+        "merge_output_format": "mp4",
+        "outtmpl": output,
         "quiet": True,
-        "prefer_ffmpeg": True,
+        "noplaylist": True,
     }
 
-    try:
-        logger.info(f"Iniciando download do vídeo {video_url}")
-        with YoutubeDL(ydl_opts) as ydl:
-            ydl.download([video_url])
+    with YoutubeDL(ydl_opts) as ydl:
+        ydl.download([video_url])
 
-        final_path = tmp_path.replace(suffix, f".{video_format.lower()}")
-        logger.info(f"Download concluído: {final_path}")
-        return final_path
-
-    except Exception as e:
-        logger.error(f"Erro ao baixar vídeo: {e}")
-        return None
+    return os.path.join(temp_dir, "video.mp4")

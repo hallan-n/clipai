@@ -1,10 +1,12 @@
 from fastapi.responses import FileResponse
 from ask_llm import ask_gpt
-from youtube import fetch_video_info
+from youtube import download_video_temp, fetch_video_info
 from transcribe import transcribe
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from edit_video import cut_video
 import json
+import os
 
 prompt = """
 Você é um analista político, especialista em analisar longas lives e identificar as pautas e temas MAIS IMPORTANTES e/ou POLEMICOS tratados.
@@ -54,10 +56,7 @@ Você é um especialista em copywriting político para YouTube, focado no estilo
 A entrada será um JSON onde cada chave representa um trecho resumido (cerca de 400 linhas) de um vídeo retirado de uma live, correspondente a um recorte entre 10 e 45 minutos.
 
 Exemplo de entrada:
-{
-  "1": "resumo do trecho",
-  "2": "resumo do trecho"
-}
+{{"1": "resumo do trecho", "2": "resumo do trecho"}}
 
 Tarefa:
 Para cada item do JSON:
@@ -82,10 +81,7 @@ Estilo do título:
 Saída:
 Retorne APENAS um JSON, mantendo as mesmas chaves da entrada, no formato:
 
-{
-  "1": "titulo gerado",
-  "2": "titulo gerado"
-}
+{{"1": "titulo gerado", "2": "titulo gerado"}}
 
 INPUT:
 {0}
@@ -142,16 +138,42 @@ async def get_video_cuts(url: str):
     except Exception as e:
         raise HTTPException(400, f'Erro ao transcrever vídeo: {e}')
 
-from youtube import download_audio_chunks
 @app.get('/video_full')
 def main(url: str):
     if not url.startswith('https://www.youtube.com/watch?v'):
         raise HTTPException(400, 'URL inválida')
-    
+    video_id = url.split('?v=')[-1]
     transc = transcribe(url)
     response = ask_gpt(prompt,  [json.dumps(transc, separators=(',', ':'))])
-    custs = json.loads(response)
-    # return  
+    cuts = json.loads(response)
+    response = ask_gpt(prompt_titles,  [json.dumps(cuts, separators=(',', ':'))])
+    titles = json.loads(response)
+
+    video_path = download_video_temp(url)
+
+    videos = []
+    
+    os.makedirs("cuts", exist_ok=True)
+
+    for index, cut in enumerate(cuts, start=1):
+        output_path = f"cuts/{video_id}_{index}.mp4"
+
+        cut_video(
+            input_video=video_path,
+            start_seconds=cut['start'],
+            end_seconds=cut['end'],
+            output_video=output_path
+        )
+
+        videos.append(
+            FileResponse(
+                path=output_path,
+                media_type="video/mp4",
+                filename=titles[str(index)] + ".mp4"
+            )
+        )
+
+    return videos
 
 if __name__ == "__main__":
     import uvicorn

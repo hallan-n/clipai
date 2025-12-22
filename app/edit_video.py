@@ -19,11 +19,3 @@ def cut_video(
     ]
 
     subprocess.run(command, check=True)
-
-# Example usage
-cut_video(
-    input_video="input.mp4",
-    start_seconds=120,
-    end_seconds=480,
-    output_video="cut.mp4"
-)
