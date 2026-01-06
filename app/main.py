@@ -1,11 +1,11 @@
-from ask_llm import ask_gpt
-from youtube import download_video_temp, get_channel_id, get_last_video_id
-from transcribe import transcribe
-from edit_video import cut_video
+from services.ask_llm import ask_gpt
+from services.youtube import download_video_temp, get_channel_id, get_last_video_id
+from services.transcribe import transcribe
+from services.edit_video import cut_video
 import json
 import os
-from logger import logger
-from mongo import find_last
+from services.logger import logger
+from services.mongo import find_last
 
 prompt_cuts = """
 Você é um analista político, especialista em analisar longas lives e identificar as pautas e temas MAIS IMPORTANTES e/ou POLEMICOS tratados.

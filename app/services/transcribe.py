@@ -1,6 +1,6 @@
 from faster_whisper import WhisperModel
-from youtube import download_audio_chunks
-from logger import logger
+from services.youtube import download_audio_chunks
+from services.logger import logger
 from youtube_transcript_api import YouTubeTranscriptApi
 
 model = WhisperModel("tiny", device="cpu", compute_type="int8", cpu_threads=1)
@@ -97,8 +97,15 @@ def transcribe(url: str) -> list[dict]:
     if not transc:
         logger.warning('Erro ao baixar transcrição via Youtube API')
         logger.info('Iniciando transcrição via Whisper')
-        chunks = download_audio_chunks(url)
-        transc = _transcribe_chunks(chunks)
+        try:
+            chunks = download_audio_chunks(url)
+            transc = _transcribe_chunks(chunks)
+            if not transc:
+                logger.error("Erro ao transcrever áudio")
+                return None
+        except Exception as e:
+            logger.error(f"Erro ao transcrever áudio: {e}")
+            return None
 
     return transc
 

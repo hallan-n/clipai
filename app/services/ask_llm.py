@@ -1,5 +1,5 @@
 import requests
-from logger import logger
+from services.logger import logger
 from openai import OpenAI
 from consts import OPENAI_API_KEY
 

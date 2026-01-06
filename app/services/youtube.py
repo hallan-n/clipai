@@ -1,7 +1,7 @@
 import os
 import tempfile
 from yt_dlp import YoutubeDL
-from logger import logger
+from services.logger import logger
 import requests
 import feedparser
 import re

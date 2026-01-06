@@ -1,6 +1,6 @@
 from pymongo import MongoClient
 from consts import MONGO_CONN
-from logger import logger
+from services.logger import logger
 
 
 def _get_conn(db: str, collection: str):
