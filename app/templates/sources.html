@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+{% include "components/head.html" %}
+
+<body class="bg-gray-900 text-gray-200 min-h-screen">
+
+    {% include "components/header.html" %}
+    <main class="max-w-[1200px] w-full mx-auto flex gap-4 pt-28">
+        <div class="flex gap-8 w-full">
+
+            <!-- Tabs -->
+            <div class="w-full max-w-[350px] flex border-r p-4 border-r-gray-600 flex-col gap-1">
+                {% for source in sources %}
+                <div class="cursor-pointer p-4 rounded-lg flex items-center justify-between tab-btn {% if forloop.first %}bg-gray-800 text-blue-500{% else %}bg-gray-700{% endif %}"
+                    data-tab="tab{{ forloop.counter }}">
+                    <div class="flex gap-4 items-center">
+                        <img class="rounded-full w-12 h-12 object-cover" src="{{ source.avatar }}">
+                        <h1 class="font-bold text-nowrap">{{ source.name }}</h1>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+
+            <!-- Conteúdo -->
+            <div class="w-full">
+                <form action="" class="flex gap-2 mb-4">
+                    <input placeholder="URL do Canal" id="channel" class="w-full bg-gray-500 rounded-lg text-gray-500" type="text">
+                    {% include "components/button.html" with text="Adicionar fonte" bg="text-nowrap bg-gray-600" hover="bg-gray-800" icon="add" %}
+                </form> 
+
+                {% for source in sources %}
+                <div class="tab-content flex flex-col gap-1 mb-4 {% if not forloop.first %}hidden{% endif %}"
+                    id="tab{{ forloop.counter }}">
+                    {% for font in source.fonts %}
+                        {% include "components/channel_font.html" with avatar=font.avatar name=font.name url=font.url has_video=True %}
+                    {% empty %}
+                        <p class="text-gray-400">Nenhuma fonte encontrada.</p>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+
+        </div>
+
+    </main>
+    <script>
+        const buttons = document.querySelectorAll(".tab-btn");
+        const contents = document.querySelectorAll(".tab-content");
+
+        buttons.forEach(btn => {
+            btn.addEventListener("click", () => {
+                const tab = btn.dataset.tab;
+
+                buttons.forEach(b => {
+                    b.classList.remove("text-blue-500", "bg-gray-800", "bg-gray-700");
+                    b.classList.add("text-gray-400", "bg-gray-700");
+                });
+
+
+                btn.classList.add("text-blue-500", "bg-gray-800");
+                btn.classList.remove("text-gray-400");
+
+                contents.forEach(c => c.classList.add("hidden"));
+                document.getElementById(tab).classList.remove("hidden");
+            });
+        });
+    </script>
+
+</body>
+
+</html>

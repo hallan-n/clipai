@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+{% include "components/head.html" %}
+
+<body class="bg-gray-800 text-gray-100">
+
+  <!-- HEADER -->
+    {% include "components/header.html" %}
+
+  <!-- HERO -->
+  <section class="h-screen flex items-center">
+    <div class="max-w-5xl mx-auto px-6 text-center">
+      <h2 class="text-5xl font-extrabold leading-tight">
+        Transforme lives longas<br>
+        em <span class="text-blue-500">cortes virais</span> automaticamente
+      </h2>
+
+      <p class="mt-6 text-gray-400 text-lg">
+        O ClipAI analisa lives inteiras, identifica os principais assuntos
+        e gera cortes prontos para Reels, Shorts e TikTok.
+      </p>
+
+      <div class="mt-10 flex justify-center gap-4">
+        <a href="#" class="bg-blue-600 hover:bg-blue-700 px-6 py-3 rounded-lg text-white text-lg">
+          Testar grátis
+        </a>
+        <a href="#" class="border border-gray-700 hover:border-gray-500 px-6 py-3 rounded-lg text-lg">
+          Ver demo
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMO FUNCIONA -->
+  <section class="bg-gray-900 border-t border-gray-800 py-20 h-screen flex items-center">
+    <div class="max-w-6xl mx-auto px-6">
+      <h3 class="text-3xl font-bold text-center mb-16">
+        Como funciona
+      </h3>
+
+      <div class="grid md:grid-cols-3 gap-10">
+        <div class="bg-gray-900 p-6 rounded-xl border border-gray-800">
+          <span class="text-blue-500 text-3xl font-bold">1</span>
+          <h4 class="mt-4 text-xl font-semibold">Envie a live</h4>
+          <p class="mt-2 text-gray-400">
+            Cole o link do YouTube ou faça upload do vídeo completo.
+          </p>
+        </div>
+
+        <div class="bg-gray-900 p-6 rounded-xl border border-gray-800">
+          <span class="text-blue-500 text-3xl font-bold">2</span>
+          <h4 class="mt-4 text-xl font-semibold">Análise inteligente</h4>
+          <p class="mt-2 text-gray-400">
+            Nossa IA identifica assuntos relevantes, picos de engajamento
+            e momentos-chave.
+          </p>
+        </div>
+
+        <div class="bg-gray-900 p-6 rounded-xl border border-gray-800">
+          <span class="text-blue-500 text-3xl font-bold">3</span>
+          <h4 class="mt-4 text-xl font-semibold">Cortes prontos</h4>
+          <p class="mt-2 text-gray-400">
+            Receba vários cortes curtos, organizados por tema e prontos
+            para postar.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BENEFÍCIOS -->
+  <section class="py-20 h-screen flex items-center">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="grid md:grid-cols-2 gap-12 items-center">
+        <div>
+          <h3 class="text-3xl font-bold">
+            Foque no conteúdo.<br>
+            A gente cuida dos cortes.
+          </h3>
+          <ul class="mt-6 space-y-4 text-gray-400">
+            <li>✔ Cortes automáticos por assunto</li>
+            <li>✔ Ideal para podcasts e lives longas</li>
+            <li>✔ Formato vertical otimizado</li>
+            <li>✔ Economia de horas de edição</li>
+          </ul>
+        </div>
+
+        <div class="bg-gray-900 border border-gray-800 rounded-xl h-64 flex items-center justify-center text-gray-500">
+          Preview do dashboard
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA FINAL -->
+  <section class="py-20 bg-gray-900 h-screen flex items-center">
+    <div class="max-w-4xl mx-auto px-6 text-center">
+      <h3 class="text-4xl font-bold text-white">
+        Comece a gerar cortes hoje
+      </h3>
+      <p class="mt-4 text-blue-100 text-lg">
+        Teste gratuitamente e veja como sua live vira conteúdo infinito.
+      </p>
+      <a href="#" class="inline-block mt-8 bg-black text-white px-8 py-4 rounded-lg text-lg hover:bg-gray-900">
+        Criar conta grátis
+      </a>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+
+
+    {% include "components/footer.html" %}
+
+</body>
+</html>
