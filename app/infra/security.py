@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta
+
 import bcrypt
+from fastapi import Header, HTTPException
 from jose import jwt
-from fastapi import Header
 
 SECRET_KEY = "2aOBIPoNcdlKv3pj6zZ6Rvj_cW7pb-78eTk48zDN6Sg"
 ALGORITHM = "HS256"
@@ -30,5 +31,8 @@ def create_access_token(data: dict, expires_delta: timedelta = None):
 
 
 def decode_token(token: str = Header(...)):
-    payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-    return payload
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload
+    except:
+        raise HTTPException(401, "Access Token incorreto ou experiado.")

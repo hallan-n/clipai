@@ -1,6 +1,5 @@
 import uvicorn
 from fastapi import FastAPI
-
 from routes.login import login
 
 app = FastAPI()
