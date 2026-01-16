@@ -1,8 +1,7 @@
-from sqlmodel import create_engine, Session
-from sqlalchemy.pool import QueuePool
-from consts import DATABASE_URL
 import infra.models
-from sqlmodel import SQLModel
+from consts import DATABASE_URL
+from sqlalchemy.pool import QueuePool
+from sqlmodel import Session, SQLModel, create_engine
 
 
 class Connection:

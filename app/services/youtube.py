@@ -1,23 +1,20 @@
 import os
-import tempfile
-from yt_dlp import YoutubeDL
-from services.logger import logger
-import requests
-import feedparser
 import re
+import tempfile
+
+import feedparser
+import requests
+from services.logger import logger
+from yt_dlp import YoutubeDL
+
 
 def download_audio_chunks(
-    video_url: str,
-    chunk_seconds: int = 300,
-    audio_format: str = "wav"
+    video_url: str, chunk_seconds: int = 300, audio_format: str = "wav"
 ) -> list[str]:
 
     temp_dir = tempfile.mkdtemp(prefix="audio_chunks_")
 
-    output_template = os.path.join(
-        temp_dir,
-        "chunk_%03d." + audio_format
-    )
+    output_template = os.path.join(temp_dir, "chunk_%03d." + audio_format)
 
     ydl_opts = {
         "format": "bestaudio/best",
@@ -30,11 +27,13 @@ def download_audio_chunks(
                 "preferredquality": "192",
             }
         ],
-        
         "postprocessor_args": [
-            "-f", "segment",
-            "-segment_time", str(chunk_seconds),
-            "-reset_timestamps", "1",
+            "-f",
+            "segment",
+            "-segment_time",
+            str(chunk_seconds),
+            "-reset_timestamps",
+            "1",
             output_template,
         ],
         "prefer_ffmpeg": True,
@@ -57,6 +56,7 @@ def download_audio_chunks(
     except Exception as e:
         logger.error(f"Erro ao baixar áudio segmentado: {e}")
         return []
+
 
 def download_audio_temp(video_url: str, format: str = "mp3") -> str | None:
     suffix = f".{format.lower()}"
@@ -87,6 +87,7 @@ def download_audio_temp(video_url: str, format: str = "mp3") -> str | None:
         logger.error("Erro ao baixar áudio:", str(e))
         return None
 
+
 def fetch_video_info(video_url: str) -> dict:
     ydl_opts = {
         "skip_download": True,
@@ -106,8 +107,9 @@ def fetch_video_info(video_url: str) -> dict:
         "comments": info.get("comment_count"),
         "channel_id": info.get("channel_id"),
         "channel_title": info.get("uploader"),
-        "thumbnail": info.get('thumbnail')
+        "thumbnail": info.get("thumbnail"),
     }
+
 
 def download_video_temp(video_url: str) -> str:
     temp_dir = tempfile.mkdtemp(prefix="video_")
@@ -126,22 +128,24 @@ def download_video_temp(video_url: str) -> str:
 
     return os.path.join(temp_dir, "video.mp4")
 
+
 def get_channel_id(url: str) -> str:
     username = url.split("@")[1]
     url = f"https://www.youtube.com/{username}"
     html = requests.get(url, timeout=10).text
 
-    match = re.search(r'channel/(UC[\w-]+)', html)
+    match = re.search(r"channel/(UC[\w-]+)", html)
 
     if not match:
         raise Exception("Channel ID not found")
 
     return match.group(1)
 
+
 def get_last_video_id(channel_id: str):
     feed_url = f"https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}"
-    feed =  feedparser.parse(feed_url)
-    
+    feed = feedparser.parse(feed_url)
+
     last_video = feed.entries[0]
 
     return last_video.get("yt_videoid")

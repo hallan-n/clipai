@@ -1,12 +1,13 @@
-from sqlmodel import Field, SQLModel, Relationship
 from typing import List
+
+from sqlmodel import Field, Relationship, SQLModel
 
 
 class Login(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     user: str
     password: str
-    
+
     channel: List["Channel"] = Relationship(back_populates="login")
 
 
@@ -20,7 +21,7 @@ class Channel(SQLModel, table=True):
     create_at: str
     update_at: str
     last_published: str
-    
+
     login_id: int = Field(foreign_key="login.id")
     login: "Login" = Relationship(back_populates="channel")
     sources: List["Source"] = Relationship(back_populates="channel")
@@ -44,7 +45,7 @@ class Content(SQLModel, table=True):
     url: str
     title: str
     duration: str
-    
+
     source_id: int = Field(foreign_key="source.id")
     source: "Source" = Relationship(back_populates="contents")
     cuts: List["Cut"] = Relationship(back_populates="content")
@@ -55,6 +56,6 @@ class Cut(SQLModel, table=True):
     title: str
     duration: str
     describe: str
-    
+
     content_id: int = Field(foreign_key="content.id")
     content: "Content" = Relationship(back_populates="cuts")

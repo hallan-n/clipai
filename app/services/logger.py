@@ -1,5 +1,6 @@
-from loguru import logger
 import sys
+
+from loguru import logger
 
 logger.remove()
 
@@ -7,8 +8,8 @@ logger.add(
     sys.stdout,
     colorize=True,
     format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | "
-           "<level>{level: <8}</level> | "
-           "<cyan>{function}</cyan>:<cyan>{line}</cyan> - "
-           "<level>{message}</level>",
+    "<level>{level: <8}</level> | "
+    "<cyan>{function}</cyan>:<cyan>{line}</cyan> - "
+    "<level>{message}</level>",
     level="INFO",
 )

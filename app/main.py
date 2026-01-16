@@ -1,5 +1,4 @@
-from infra.database import Connection
-from sqlmodel import text
+from infra.crud import add
+from infra.models import Login
 
-with Connection() as conn:
-    conn.exec(text('select 1;'))
+add(Login(user="Hállan", password="Neves"))
