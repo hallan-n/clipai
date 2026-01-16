@@ -1,8 +1,7 @@
 from infra.database import Connection
-from infra.models import Cut
+from infra.schemas import Cut
 
 
-# Cut CRUD
 def create_cut(cut: Cut):
     with Connection() as conn:
         conn.add(cut)

@@ -1,8 +1,7 @@
 from infra.database import Connection
-from infra.models import Login
+from infra.schemas import Login
 
 
-# Login CRUD
 def create_login(login: Login):
     with Connection() as conn:
         conn.add(login)
@@ -15,6 +14,9 @@ def get_login(id: int):
     with Connection() as conn:
         return conn.get(Login, id)
 
+def get_login_by_email(email: str):
+    with Connection() as conn:
+        return conn.query(Login).filter(Login.email == email).first()
 
 def update_login(login: Login):
     with Connection() as conn:

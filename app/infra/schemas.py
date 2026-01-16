@@ -5,7 +5,7 @@ from sqlmodel import Field, Relationship, SQLModel
 
 class Login(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
-    user: str
+    email: str
     password: str
 
     channel: List["Channel"] = Relationship(back_populates="login")

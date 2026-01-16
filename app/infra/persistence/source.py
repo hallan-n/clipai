@@ -1,5 +1,5 @@
 from infra.database import Connection
-from infra.models import Source
+from infra.schemas import Source
 
 
 def create_source(source: Source):

@@ -1,8 +1,7 @@
 from infra.database import Connection
-from infra.models import Channel
+from infra.schemas import Channel
 
 
-# Channel CRUD
 def create_channel(channel: Channel):
     with Connection() as conn:
         conn.add(channel)

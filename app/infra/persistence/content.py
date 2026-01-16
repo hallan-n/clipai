@@ -1,8 +1,7 @@
 from infra.database import Connection
-from infra.models import Content
+from infra.schemas import Content
 
 
-# Content CRUD
 def create_content(content: Content):
     with Connection() as conn:
         conn.add(content)
