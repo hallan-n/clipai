@@ -1,64 +1,5 @@
-from faster_whisper import WhisperModel
 from services.logger import logger
-from services.youtube import download_audio_chunks
 from youtube_transcript_api import YouTubeTranscriptApi
-
-model = WhisperModel("tiny", device="cpu", compute_type="int8", cpu_threads=1)
-
-
-def _identify_format(path: str) -> bool:
-    AUDIO = {"aac", "flac", "m4a", "mp3", "ogg", "opus", "wav", "wma"}
-    return path.split(".")[-1].lower() in AUDIO
-
-
-def _transcribe_chunks(chunks: list[str]) -> list[dict]:
-    results: list[dict] = []
-    offset = 0.0
-
-    total = len(chunks)
-
-    for idx, chunk_path in enumerate(chunks, 1):
-        if not _identify_format(chunk_path):
-            logger.warning(f"Formato ignorado: {chunk_path}")
-            continue
-
-        logger.info(f"Transcrevendo chunk {idx}/{total}")
-
-        segments, _ = model.transcribe(
-            chunk_path,
-            language="pt",
-            beam_size=1,
-            temperature=0.0,
-            vad_filter=False,
-            condition_on_previous_text=False,
-            chunk_length=15,
-            no_speech_threshold=0.8,
-            log_prob_threshold=-2.0,
-        )
-
-        last_end = 0.0
-
-        for seg in segments:
-            text = seg.text.strip()
-            if not text:
-                continue
-
-            start = seg.start + offset
-            end = seg.end + offset
-
-            results.append(
-                {
-                    "text": text,
-                    "start": round(start, 2),
-                    "end": round(end, 2),
-                }
-            )
-
-            last_end = seg.end
-
-        offset += last_end
-
-    return results
 
 
 def _transcribe_youtube_api(video_id: str):
@@ -92,19 +33,4 @@ def transcribe(url: str) -> list[dict]:
 
     video_id = url.split("?v=")[-1]
     logger.info("Iniciando transcrição via Youtube API")
-    transc = _transcribe_youtube_api(video_id)
-
-    if not transc:
-        logger.warning("Erro ao baixar transcrição via Youtube API")
-        logger.info("Iniciando transcrição via Whisper")
-        try:
-            chunks = download_audio_chunks(url)
-            transc = _transcribe_chunks(chunks)
-            if not transc:
-                logger.error("Erro ao transcrever áudio")
-                return None
-        except Exception as e:
-            logger.error(f"Erro ao transcrever áudio: {e}")
-            return None
-
-    return transc
+    return _transcribe_youtube_api(video_id)

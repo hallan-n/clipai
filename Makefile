@@ -23,4 +23,3 @@ alembic:
 
 lint:
 	black app
-	isort app
