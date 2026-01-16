@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
-from infra.persistence.login import add, get, get_by_email, update
+from infra.persistence.login import (insert_login, select_by_email,
+                                     select_login, update_login)
 from infra.schemas import Login
 from infra.security import (check_hash, create_access_token, decode_token,
                             hashed)
@@ -8,9 +9,10 @@ from models import PostLogin, PutLogin
 login = APIRouter(tags=["Login"], prefix="/login")
 
 
-@login.post("/signin")
+@login.post("/signin", tags=["Public"])
 def sign_in(login: PostLogin):
-    login_auth = get_by_email(login.email)
+    """Realiza o login"""
+    login_auth = select_by_email(login.email)
     if not login_auth:
         raise HTTPException(404, "Login não encontrado!")
 
@@ -22,34 +24,36 @@ def sign_in(login: PostLogin):
     return {"access_token": access_token, "token_type": "bearer"}
 
 
-@login.post("/create")
+@login.post("", tags=["Public"])
 def create_login(login: PostLogin):
     """Cria um login"""
-    has_login = get_by_email(login.email)
+    has_login = select_by_email(login.email)
     if has_login:
         raise HTTPException(403, "Email em uso!")
 
     login.password = hashed(login.password)
     try:
         schema = Login(email=login.email, password=login.password)
-        success_login = add(schema)
+        success_login = insert_login(schema)
         return success_login
     except Exception as e:
         raise HTTPException(400, f"Erro ao criar login: {e}")
 
 
-@login.get("/get")
+@login.get("")
 def get_login(token: dict = Depends(decode_token)):
-    login = get(token["id"])
+    """Recupera os dados de login atual"""
+    login = select_login(token["id"])
     return login
 
 
-@login.put("/update")
+@login.put("")
 def update_login(login: PutLogin, token: dict = Depends(decode_token)):
+    """Atualiza o login atual"""
     login.password = hashed(login.password)
     try:
         schema = Login(id=token["id"], email=login.email, password=login.password)
-        success_login = update(schema)
+        success_login = update_login(schema)
         return success_login
     except Exception as e:
         raise HTTPException(400, f"Erro ao atualizar login: {e}")

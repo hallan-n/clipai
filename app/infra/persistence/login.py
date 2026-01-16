@@ -2,7 +2,7 @@ from infra.database import Connection
 from infra.schemas import Login
 
 
-def add(login: Login) -> Login:
+def insert_login(login: Login) -> Login:
     with Connection() as conn:
         conn.add(login)
         conn.commit()
@@ -10,17 +10,17 @@ def add(login: Login) -> Login:
         return login
 
 
-def get(id: int) -> Login:
+def select_login(id: int) -> Login:
     with Connection() as conn:
         return conn.get(Login, id)
 
 
-def get_by_email(email: str) -> Login:
+def select_by_email(email: str) -> Login:
     with Connection() as conn:
         return conn.query(Login).filter(Login.email == email).first()
 
 
-def update(login: Login) -> Login:
+def update_login(login: Login) -> Login:
     with Connection() as conn:
         existing = conn.get(Login, login.id)
         if existing:
@@ -30,7 +30,7 @@ def update(login: Login) -> Login:
             return merged
 
 
-def delete(id: int):
+def delete_login(id: int):
     with Connection() as conn:
         login = conn.get(Login, id)
         if login:

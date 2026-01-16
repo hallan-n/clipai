@@ -2,7 +2,7 @@ from infra.database import Connection
 from infra.schemas import Channel
 
 
-def create_channel(channel: Channel):
+def insert_channel(channel: Channel):
     with Connection() as conn:
         conn.add(channel)
         conn.commit()
@@ -10,7 +10,7 @@ def create_channel(channel: Channel):
         return channel
 
 
-def get_channel(id: int):
+def select_channel(id: int):
     with Connection() as conn:
         return conn.get(Channel, id)
 

@@ -2,7 +2,7 @@ from infra.database import Connection
 from infra.schemas import Content
 
 
-def create_content(content: Content):
+def insert_content(content: Content):
     with Connection() as conn:
         conn.add(content)
         conn.commit()
@@ -10,7 +10,7 @@ def create_content(content: Content):
         return content
 
 
-def get_content(id: int):
+def select_content(id: int):
     with Connection() as conn:
         return conn.get(Content, id)
 

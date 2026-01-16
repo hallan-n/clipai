@@ -2,7 +2,7 @@ from infra.database import Connection
 from infra.schemas import Cut
 
 
-def create_cut(cut: Cut):
+def insert_cut(cut: Cut):
     with Connection() as conn:
         conn.add(cut)
         conn.commit()
@@ -10,7 +10,7 @@ def create_cut(cut: Cut):
         return cut
 
 
-def get_cut(id: int):
+def select_cut(id: int):
     with Connection() as conn:
         return conn.get(Cut, id)
 

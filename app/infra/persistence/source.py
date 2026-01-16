@@ -2,7 +2,7 @@ from infra.database import Connection
 from infra.schemas import Source
 
 
-def create_source(source: Source):
+def insert_source(source: Source):
     with Connection() as conn:
         conn.add(source)
         conn.commit()
@@ -10,7 +10,7 @@ def create_source(source: Source):
         return source
 
 
-def get_source(id: int):
+def select_source(id: int):
     with Connection() as conn:
         return conn.get(Source, id)
 
