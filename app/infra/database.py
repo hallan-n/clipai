@@ -1,6 +1,10 @@
 from sqlmodel import create_engine, Session
 from sqlalchemy.pool import QueuePool
 from consts import DATABASE_URL
+import infra.models
+from sqlmodel import SQLModel
+
+
 class Connection:
     def __init__(self):
         engine = create_engine(
@@ -10,8 +14,9 @@ class Connection:
             max_overflow=20,
             pool_timeout=30,
             pool_recycle=3600,
-            echo=True 
+            echo=True,
         )
+        SQLModel.metadata.create_all(engine)
         self._session = Session(engine)
 
     def __enter__(self):

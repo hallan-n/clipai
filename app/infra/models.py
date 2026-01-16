@@ -1,4 +1,5 @@
 from sqlmodel import Field, SQLModel, Relationship
+from typing import List
 
 
 class Login(SQLModel, table=True):
@@ -6,7 +7,8 @@ class Login(SQLModel, table=True):
     user: str
     password: str
     
-    channel = Relationship(back_populates="login")
+    channel: List["Channel"] = Relationship(back_populates="login")
+
 
 class Channel(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
@@ -20,8 +22,8 @@ class Channel(SQLModel, table=True):
     last_published: str
     
     login_id: int = Field(foreign_key="login.id")
-    login = Relationship(back_populates="channel")
-    sources = Relationship(back_populates="channel")
+    login: "Login" = Relationship(back_populates="channel")
+    sources: List["Source"] = Relationship(back_populates="channel")
 
 
 class Source(SQLModel, table=True):
@@ -32,10 +34,9 @@ class Source(SQLModel, table=True):
     source_name: str
     has_new_content: str
 
-
     channel_id: int = Field(foreign_key="channel.id")
-    channel = Relationship(back_populates="sources")
-    contents = Relationship(back_populates="source")
+    channel: "Channel" = Relationship(back_populates="sources")
+    contents: List["Content"] = Relationship(back_populates="source")
 
 
 class Content(SQLModel, table=True):
@@ -45,8 +46,8 @@ class Content(SQLModel, table=True):
     duration: str
     
     source_id: int = Field(foreign_key="source.id")
-    source = Relationship(back_populates="contents")
-    cuts = Relationship(back_populates="content")
+    source: "Source" = Relationship(back_populates="contents")
+    cuts: List["Cut"] = Relationship(back_populates="content")
 
 
 class Cut(SQLModel, table=True):
@@ -56,4 +57,4 @@ class Cut(SQLModel, table=True):
     describe: str
     
     content_id: int = Field(foreign_key="content.id")
-    content = Relationship(back_populates="cuts")
+    content: "Content" = Relationship(back_populates="cuts")
