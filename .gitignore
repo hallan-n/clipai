@@ -8,3 +8,4 @@ data
 audio_chunks
 *.json
 ./cuts
+database.db

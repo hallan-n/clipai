@@ -1,16 +1,19 @@
 version: "3.9"
 
 services:
-  ollama:
-    image: ollama/ollama
-    container_name: ollama
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
     restart: unless-stopped
     ports:
-      - "11434:11434"
-    volumes:
-      - ollama:/root/.ollama
+      - "3306:3306"
     environment:
-      - OLLAMA_NUM_THREADS=4
- 
+      MYSQL_ROOT_PASSWORD: 12qwaszx
+      MYSQL_DATABASE: clipai
+      MYSQL_USER: neves
+      MYSQL_PASSWORD: 12qwaszx
+    volumes:
+      - mysql_data:/var/lib/mysql
+
 volumes:
-  ollama:
+  mysql_data:
