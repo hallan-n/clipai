@@ -9,3 +9,4 @@ audio_chunks
 *.json
 ./cuts
 database.db
+alembic
