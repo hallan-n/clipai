@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 import uvicorn
 
-from routes.login import route as login
+from api.routes.login import route as login
 
 app = FastAPI()
 

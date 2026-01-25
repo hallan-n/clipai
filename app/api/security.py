@@ -16,7 +16,7 @@ def check_hash(hashed: str, password: str):
     return bcrypt.checkpw(password.encode("utf-8"), hashed.encode("utf-8"))
 
 
-def create_access_token(data: dict, expires_delta: timedelta = None):
+def create_access_token(data: dict, expires_delta: timedelta = timedelta(days=7)):
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
