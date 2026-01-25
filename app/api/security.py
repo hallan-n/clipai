@@ -3,10 +3,7 @@ from datetime import datetime, timedelta
 import bcrypt
 from fastapi import Header, HTTPException
 from jose import jwt
-
-SECRET_KEY = "2aOBIPoNcdlKv3pj6zZ6Rvj_cW7pb-78eTk48zDN6Sg"
-ALGORITHM = "HS256"
-EXPIRE = 30
+from consts import SECRET_KEY, ALGORITHM, EXPIRE
 
 
 def hashed(password: str):

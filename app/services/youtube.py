@@ -4,11 +4,10 @@ import tempfile
 
 import feedparser
 import requests
-from services.logger import logger
 from yt_dlp import YoutubeDL
 
 
-def fetch_video_info(video_url: str) -> dict:
+def get_video_info(video_url: str) -> dict:
     ydl_opts = {
         "skip_download": True,
         "quiet": True,
@@ -69,3 +68,29 @@ def get_last_video_id(channel_id: str):
     last_video = feed.entries[0]
 
     return last_video.get("yt_videoid")
+
+
+def fetch_channel_info(channel_url: str) -> dict:
+    ydl_opts = {
+        "skip_download": True,
+        "quiet": True,
+        "extract_flat": True,
+    }
+
+    with YoutubeDL(ydl_opts) as ydl:
+        info = ydl.extract_info(channel_url, download=False)
+    
+    return {
+        "custom_id": info.get("id"),
+        "name": info.get("channel"),
+        "subscribe": info.get("channel_follower_count"),
+        "thumbnail": info.get("thumbnails", [{}])[0].get("url"),
+        "avatar": info.get("thumbnails", [{}])[-1].get("url"),
+        "url": info.get("channel_url"),
+        "custom_url": info.get("uploader_url"),
+        "last_video": info.get("entries", [{}])[0].get("entries", [{}])[0].get("url")
+    }
+
+
+asd = get_last_video_id("UCJFOvTHTRgD8tk8HMPLoPeQ")
+print(asd)

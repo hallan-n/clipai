@@ -1,4 +1,4 @@
-import infra.schemas
+import db.models
 from consts import DATABASE_URL
 from sqlalchemy.pool import QueuePool
 from sqlmodel import Session, SQLModel, create_engine

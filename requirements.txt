@@ -9,3 +9,8 @@ yt_dlp
 requests
 feedparser
 openai
+alembic
+playwright
+bcrypt
+python-jose
+pydantic
