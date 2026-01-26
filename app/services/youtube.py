@@ -7,7 +7,7 @@ import requests
 from yt_dlp import YoutubeDL
 
 
-def get_video_info(video_url: str) -> dict:
+def fetch_video_info(video_url: str) -> dict:
     ydl_opts = {
         "skip_download": True,
         "quiet": True,
@@ -48,9 +48,7 @@ def download_video_temp(video_url: str) -> str:
     return os.path.join(temp_dir, "video.mp4")
 
 
-def get_channel_id(url: str) -> str:
-    username = url.split("@")[1]
-    url = f"https://www.youtube.com/{username}"
+def fetch_channel_id(url: str) -> str:
     html = requests.get(url, timeout=10).text
 
     match = re.search(r"channel/(UC[\w-]+)", html)
@@ -61,7 +59,7 @@ def get_channel_id(url: str) -> str:
     return match.group(1)
 
 
-def get_last_video_id(channel_id: str):
+def fetch_last_video_id(channel_id: str):
     feed_url = f"https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}"
     feed = feedparser.parse(feed_url)
 
@@ -90,7 +88,3 @@ def fetch_channel_info(channel_url: str) -> dict:
         "custom_url": info.get("uploader_url"),
         "last_video": info.get("entries", [{}])[0].get("entries", [{}])[0].get("url"),
     }
-
-
-asd = get_last_video_id("UCJFOvTHTRgD8tk8HMPLoPeQ")
-print(asd)

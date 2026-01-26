@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from uuid import UUID, uuid4
 from sqlmodel import Field, Relationship, SQLModel
 from datetime import datetime
@@ -23,17 +23,27 @@ class Login(SQLModel, table=True):
         sa_column_kwargs={"onupdate": datetime.utcnow},
     )
 
+    sources: List["Source"] = Relationship(
+        back_populates="login",
+        sa_relationship_kwargs={
+            "cascade": "all, delete-orphan"
+        }
+    )
 
-# class Source(SQLModel, table=True):
-#     id: int | None = Field(default=None, primary_key=True)
-#     custom_id: str | None = None
-#     name: str | None = None
-#     subscribe: str | None = None
-#     thumbnail: str | None = None
-#     avatar: str | None = None
-#     url: str | None = None
-#     custom_url: str | None = None
-#     last_video: str | None = None
+class Source(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    custom_id: str | None = None
+    name: str | None = None
+    subscribe: str | None = None
+    thumbnail: str | None = None
+    avatar: str | None = None
+    url: str | None = None
+    custom_url: str | None = None
+    last_video: str | None = None
+
+    login_id: int = Field(foreign_key="login.id", nullable=False)
+
+    login: Login | None = Relationship(back_populates="sources")
 
 
 # class Content(SQLModel, table=True):
