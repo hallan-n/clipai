@@ -79,7 +79,7 @@ def fetch_channel_info(channel_url: str) -> dict:
 
     with YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(channel_url, download=False)
-    
+
     return {
         "custom_id": info.get("id"),
         "name": info.get("channel"),
@@ -88,7 +88,7 @@ def fetch_channel_info(channel_url: str) -> dict:
         "avatar": info.get("thumbnails", [{}])[-1].get("url"),
         "url": info.get("channel_url"),
         "custom_url": info.get("uploader_url"),
-        "last_video": info.get("entries", [{}])[0].get("entries", [{}])[0].get("url")
+        "last_video": info.get("entries", [{}])[0].get("entries", [{}])[0].get("url"),
     }
 
 

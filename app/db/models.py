@@ -3,15 +3,18 @@ from uuid import UUID, uuid4
 from sqlmodel import Field, Relationship, SQLModel
 from datetime import datetime
 
+
 class Login(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
-    public_id: UUID = Field(default_factory=uuid4, index=True, unique=True, nullable=False)
+    public_id: UUID = Field(
+        default_factory=uuid4, index=True, unique=True, nullable=False
+    )
 
     email: str = Field(index=True, unique=True)
     name: str | None = None
     password: str | None = None
     provider: str = Field(default="local")
-    provider_id: str | None = None 
+    provider_id: str | None = None
     avatar_url: str | None = None
 
     created_at: datetime = Field(default_factory=datetime.utcnow)
@@ -19,6 +22,7 @@ class Login(SQLModel, table=True):
         default_factory=datetime.utcnow,
         sa_column_kwargs={"onupdate": datetime.utcnow},
     )
+
 
 # class Source(SQLModel, table=True):
 #     id: int | None = Field(default=None, primary_key=True)

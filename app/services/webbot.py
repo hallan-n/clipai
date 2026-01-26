@@ -6,8 +6,7 @@ from services.logger import logger
 
 
 def apply_stealth(page: Page):
-    page.add_init_script(
-        """
+    page.add_init_script("""
     // Remover navigator.webdriver
     Object.defineProperty(navigator, 'webdriver', { get: () => undefined });
 
@@ -35,28 +34,23 @@ def apply_stealth(page: Page):
         if (parameter === 37446) return 'Intel Iris OpenGL Engine';
         return getParameter(parameter);
     };
-    """
-    )
+    """)
 
 
 def inject_session(page: Page, session: Session):
-    page.add_init_script(
-        f"""() => {{
+    page.add_init_script(f"""() => {{
             const data = {json.dumps(session.local_storage)};
             for (const [key, value] of Object.entries(data)) {{
                 localStorage.setItem(key, value);
             }}
-        }}"""
-    )
+        }}""")
 
-    page.add_init_script(
-        f"""() => {{
+    page.add_init_script(f"""() => {{
             const data = {json.dumps(session.session_storage)};
             for (const [key, value] of Object.entries(data)) {{
                 sessionStorage.setItem(key, value);
             }}
-        }}"""
-    )
+        }}""")
 
 
 def get_login_session(login: Login) -> Session:
@@ -96,7 +90,7 @@ def get_login_session(login: Login) -> Session:
         page.fill('input[type="email"]', login.email)
         page.click('button:has-text("Avançar")')
         page.wait_for_timeout(2000)
-        page.screenshot(path='./salvar.jpeg')
+        page.screenshot(path="./salvar.jpeg")
         page.wait_for_selector('input[type="password"]', timeout=15000)
         page.fill('input[type="password"]', login.password)
         page.click('button:has-text("Avançar")')

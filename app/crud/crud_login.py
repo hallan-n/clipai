@@ -1,4 +1,3 @@
-
 from db.models import Login
 from db.database import Connection
 
@@ -10,22 +9,19 @@ class LoginRepository:
             conn.commit()
             conn.refresh(login)
             return login
-        
+
     def select_by_id(self, id: int) -> Login:
         with Connection() as conn:
             return conn.get(Login, id)
-        
+
     def select_by_provider(self, provider: str, provider_id: int) -> Login:
         with Connection() as conn:
             return (
                 conn.query(Login)
-                .filter(
-                    Login.provider_id == provider_id,
-                    Login.provider == provider
-                )
+                .filter(Login.provider_id == provider_id, Login.provider == provider)
                 .first()
             )
-        
+
     def select_by_email(self, email: str) -> Login:
         with Connection() as conn:
             return conn.query(Login).filter(Login.email == email).first()

@@ -12,7 +12,6 @@ def setup_middlewares(app: FastAPI):
         allow_headers=["*"],
     )
 
-
     @app.middleware("http")
     async def error_handler_middleware(request: Request, call_next):
         try:
