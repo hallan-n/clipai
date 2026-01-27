@@ -1,4 +1,5 @@
 from datetime import datetime
+
 from pydantic import BaseModel, EmailStr
 
 
@@ -10,13 +11,13 @@ class CreateLocalLoginRequest(BaseModel):
 
 
 class CreateLocalLoginResponse(BaseModel):
-    public_id: str
-    email: EmailStr
-    name: str
-    password: str
-    avatar_url: str
-    created_at: datetime
-    updated_at: datetime
+    public_id: str | None
+    email: EmailStr | None
+    name: str | None
+    password: str | None
+    avatar_url: str | None
+    created_at: datetime | None
+    updated_at: datetime | None
 
 
 class LocalLoginRequest(BaseModel):

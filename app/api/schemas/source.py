@@ -1,17 +1,22 @@
+from datetime import datetime
+
 from openai import BaseModel
 
 
-class AddChannelResponse(BaseModel):
-    custom_id: str
-    name: str
-    subscribe: str
-    thumbnail: str
-    avatar: str
-    url: str
-    custom_url: str
-    last_video: str
+class SourceResponse(BaseModel):
+    custom_id: str | None
+    name: str | None
+    subscribe: str | None
+    thumbnail: str | None
+    avatar: str | None
+    url: str | None
+    custom_url: str | None
+    last_video: str | None
+
+    created_at: datetime | None
+    updated_at: datetime | None
 
 
-class RemoveChannelResponse(BaseModel):
-    success: bool
-    detail: str
+class RemoveSourceResponse(BaseModel):
+    success: bool | None
+    detail: str | None

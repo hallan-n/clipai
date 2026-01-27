@@ -1,7 +1,10 @@
-from typing import List, Optional
-from uuid import UUID, uuid4
-from sqlmodel import Field, Relationship, SQLModel
 from datetime import datetime
+from typing import List
+from uuid import UUID, uuid4
+
+import sqlalchemy as sa
+from sqlalchemy import DateTime, func
+from sqlmodel import Field, Relationship, SQLModel
 
 
 class Login(SQLModel, table=True):
@@ -17,12 +20,22 @@ class Login(SQLModel, table=True):
     provider_id: str | None = None
     avatar_url: str | None = None
 
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-    updated_at: datetime = Field(
-        default_factory=datetime.utcnow,
-        sa_column_kwargs={"onupdate": datetime.utcnow},
+    created_at: datetime = Field(
+        sa_column=sa.Column(
+            DateTime,
+            nullable=False,
+            server_default=func.now(),
+        )
     )
 
+    updated_at: datetime = Field(
+        sa_column=sa.Column(
+            DateTime,
+            nullable=False,
+            server_default=func.now(),
+            onupdate=func.now(),
+        )
+    )
     sources: List["Source"] = Relationship(
         back_populates="login", sa_relationship_kwargs={"cascade": "all, delete-orphan"}
     )
@@ -39,8 +52,24 @@ class Source(SQLModel, table=True):
     custom_url: str | None = None
     last_video: str | None = None
 
-    login_id: int = Field(foreign_key="login.id", nullable=False)
+    created_at: datetime = Field(
+        sa_column=sa.Column(
+            DateTime,
+            nullable=False,
+            server_default=func.now(),
+        )
+    )
 
+    updated_at: datetime = Field(
+        sa_column=sa.Column(
+            DateTime,
+            nullable=False,
+            server_default=func.now(),
+            onupdate=func.now(),
+        )
+    )
+
+    login_id: int = Field(foreign_key="login.id", nullable=False)
     login: Login | None = Relationship(back_populates="sources")
 
 

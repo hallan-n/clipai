@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta
 
 import bcrypt
+from consts import ALGORITHM, EXPIRE, SECRET_KEY
 from fastapi import Header, HTTPException
 from jose import jwt
-from consts import SECRET_KEY, ALGORITHM, EXPIRE
 
 
 def hashed(password: str):

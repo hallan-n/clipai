@@ -1,8 +1,10 @@
-from app.domain.models.login_model import Session, Login
 import json
 from datetime import datetime, timedelta
-from playwright.sync_api import sync_playwright, Page
+
+from playwright.sync_api import Page, sync_playwright
 from services.logger import logger
+
+from app.domain.models.login_model import Login, Session
 
 
 def apply_stealth(page: Page):

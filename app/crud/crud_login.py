@@ -1,5 +1,5 @@
-from db.models import Login
 from db.database import Connection
+from db.models import Login
 
 
 class LoginRepository:

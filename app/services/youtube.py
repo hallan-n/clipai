@@ -78,13 +78,19 @@ def fetch_channel_info(channel_url: str) -> dict:
     with YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(channel_url, download=False)
 
+    thumbnails = info.get("thumbnails") or []
+    custom_id = info.get("uploader_url").split("/")[-1]
     return {
-        "custom_id": info.get("id"),
+        "custom_id": custom_id or info.get("id"),
         "name": info.get("channel"),
         "subscribe": info.get("channel_follower_count"),
-        "thumbnail": info.get("thumbnails", [{}])[0].get("url"),
-        "avatar": info.get("thumbnails", [{}])[-1].get("url"),
+        "thumbnail": thumbnails[0].get("url") if len(thumbnails) > 0 else "",
+        "avatar": thumbnails[-1].get("url") if thumbnails else "",
         "url": info.get("channel_url"),
         "custom_url": info.get("uploader_url"),
-        "last_video": info.get("entries", [{}])[0].get("entries", [{}])[0].get("url"),
+        "last_video": (
+            info.get("entries")[0].get("entries")[0].get("url")
+            if len(info.get("entries")) > 0
+            else ""
+        ),
     }

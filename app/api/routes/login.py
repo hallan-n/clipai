@@ -1,16 +1,16 @@
-from fastapi import APIRouter, HTTPException
-from fastapi.responses import RedirectResponse
 import httpx
-from api.security import create_access_token, hashed, check_hash
 from api.schemas.login import (
+    AccessToken,
     CreateLocalLoginRequest,
     CreateLocalLoginResponse,
-    AccessToken,
     LocalLoginRequest,
 )
-from db.models import Login
-from crud.crud_login import LoginRepository
+from api.security import check_hash, create_access_token, hashed
 from consts import CLIENT_ID, CLIENT_SECRET
+from crud.crud_login import LoginRepository
+from db.models import Login
+from fastapi import APIRouter, HTTPException
+from fastapi.responses import RedirectResponse
 
 route = APIRouter(prefix="/auth", tags=["Autenticação"])
 login_repo = LoginRepository()
