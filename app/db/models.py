@@ -72,15 +72,22 @@ class Source(SQLModel, table=True):
     login_id: int = Field(foreign_key="login.id", nullable=False)
     login: Login | None = Relationship(back_populates="sources")
 
+    contents: List["Content"] = Relationship(
+        back_populates="source",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
+    )
 
-# class Content(SQLModel, table=True):
-#     id: int | None = Field(default=None, primary_key=True)
-#     url: str | None = None
-#     title: str | None = None
-#     duration: str | None = None
-#     likes: str | None = None
-#     comments: str | None = None
-#     thumbnail: str | None = None
+class Content(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    url: str | None
+    title: str | None
+    description: str | None
+    published_at: datetime | None
+    thumbnail: str | None
+    duration: int | None 
+
+    source_id: int = Field(foreign_key="source.id", nullable=False)
+    source: Source | None = Relationship(back_populates="contents")
 
 
 # class Cut(SQLModel, table=True):

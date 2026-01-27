@@ -1,10 +1,8 @@
 import os
-import re
 import tempfile
-
 import feedparser
-import requests
 from yt_dlp import YoutubeDL
+from datetime import datetime
 
 
 def fetch_video_info(video_url: str) -> dict:
@@ -48,24 +46,50 @@ def download_video_temp(video_url: str) -> str:
     return os.path.join(temp_dir, "video.mp4")
 
 
-def fetch_channel_id(url: str) -> str:
-    html = requests.get(url, timeout=10).text
-
-    match = re.search(r"channel/(UC[\w-]+)", html)
-
-    if not match:
-        raise Exception("Channel ID not found")
-
-    return match.group(1)
-
-
-def fetch_last_video_id(channel_id: str):
+def fetch_video_infos(channel_id: str, limit: int) -> list[dict]:
     feed_url = f"https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}"
     feed = feedparser.parse(feed_url)
 
-    last_video = feed.entries[0]
+    videos: list[dict] = []
 
-    return last_video.get("yt_videoid")
+    for entry in feed.entries[:limit]:
+        video: dict = {}
+        
+        video["video_id"] = entry.get("yt_videoid")
+        video["url"] = entry.get("link")
+        video["title"] = entry.get("title")
+
+        video["description"] = entry.get("summary")
+
+        if hasattr(entry, "published_parsed"):
+            video["published_at"] = datetime(*entry.published_parsed[:6]).isoformat()
+        else:
+            video["published_at"] = None
+
+        if hasattr(entry, "updated_parsed"):
+            video["updated_at"] = datetime(*entry.updated_parsed[:6]).isoformat()
+        else:
+            video["updated_at"] = None
+
+        video["author"] = entry.author if hasattr(entry, "author") else None
+
+        thumbnail = None
+        if "media_thumbnail" in entry and entry.media_thumbnail:
+            thumbnail = entry.media_thumbnail[0].get("url")
+        video["thumbnail"] = thumbnail
+
+        duration = None
+        if "media_content" in entry and entry.media_content:
+            duration = entry.media_content[0].get("duration")
+            if duration:
+                duration = int(duration)
+        video["duration"] = duration
+
+        video["tags"] = [tag["term"] for tag in entry.tags] if hasattr(entry, "tags") else []
+
+        videos.append(video)
+
+    return videos
 
 
 def fetch_channel_info(channel_url: str) -> dict:
@@ -79,9 +103,8 @@ def fetch_channel_info(channel_url: str) -> dict:
         info = ydl.extract_info(channel_url, download=False)
 
     thumbnails = info.get("thumbnails") or []
-    custom_id = info.get("uploader_url").split("/")[-1]
     return {
-        "custom_id": custom_id or info.get("id"),
+        "custom_id": info.get("uploader_url").split("/")[-1] or info.get("id"),
         "name": info.get("channel"),
         "subscribe": info.get("channel_follower_count"),
         "thumbnail": thumbnails[0].get("url") if len(thumbnails) > 0 else "",
