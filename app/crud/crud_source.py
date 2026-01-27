@@ -20,7 +20,11 @@ class SourceRepository:
 
     def select_by_url_and_login_id(self, url: str, login_id: int) -> Source:
         with Connection() as conn:
-            return conn.query(Source).filter(Source.url == url, Source.login_id == login_id).first()
+            return (
+                conn.query(Source)
+                .filter(Source.url == url, Source.login_id == login_id)
+                .first()
+            )
 
     def update(self, source: Source) -> Source:
         with Connection() as conn:

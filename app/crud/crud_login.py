@@ -26,7 +26,6 @@ class LoginRepository:
         with Connection() as conn:
             return conn.query(Login).filter(Login.email == email).first()
 
-
     def update(self, login: Login) -> Login:
         with Connection() as conn:
             existing = conn.get(Login, login.id)

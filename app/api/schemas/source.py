@@ -1,7 +1,6 @@
 from openai import BaseModel
 
 
-
 class AddChannelResponse(BaseModel):
     custom_id: str
     name: str

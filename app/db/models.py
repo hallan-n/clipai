@@ -24,11 +24,9 @@ class Login(SQLModel, table=True):
     )
 
     sources: List["Source"] = Relationship(
-        back_populates="login",
-        sa_relationship_kwargs={
-            "cascade": "all, delete-orphan"
-        }
+        back_populates="login", sa_relationship_kwargs={"cascade": "all, delete-orphan"}
     )
+
 
 class Source(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)

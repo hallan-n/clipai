@@ -3,10 +3,10 @@ from api.security import decode_token
 from api.schemas.source import AddChannelResponse, RemoveChannelResponse
 from db.models import Source
 from crud.crud_source import SourceRepository
+import re
 
 route = APIRouter(prefix="/source", tags=["Fontes"])
 source_repo = SourceRepository()
-
 
 
 from api.utils import get_current_user
@@ -20,23 +20,29 @@ from services.youtube import fetch_channel_info, fetch_channel_id
     response_model=AddChannelResponse,
 )
 def add_channel(url: str, token: dict = Depends(decode_token)):
+
     if not url.startswith("https://www.youtube.com"):
-        return HTTPException(400, "URL inválida.")
-    
-    if "@" not in url or "/channel/" in url:
-        return HTTPException(400, "URL inválida.")
+        raise HTTPException(400, "URL inválida.")
+
+    if not "@" in url or not "/channel/" in url:
+        raise HTTPException(400, "URL inválida.")
+
+    if re.match(r"^https:\/\/www\.youtube\.com\/(@|channel\/).*$", url) is None:
+        raise HTTPException(400, "URL inválida.")
 
     current_user = get_current_user(token)
 
     channel_data = fetch_channel_info(url)
     if not channel_data:
-        return HTTPException(404, "Canal não encontrado.")
+        raise HTTPException(404, "Canal não encontrado.")
 
-    has_source = source_repo.select_by_url_and_login_id(channel_data["url"], current_user.id)
+    has_source = source_repo.select_by_url_and_login_id(
+        channel_data["url"], current_user.id
+    )
 
     if has_source:
         raise HTTPException(409, "Canal já adicionado.")
-    
+
     resp = source_repo.insert(
         Source(
             custom_id=channel_data["custom_id"],
@@ -59,9 +65,7 @@ def add_channel(url: str, token: dict = Depends(decode_token)):
         url=resp.url,
         custom_url=resp.custom_url,
         last_video=resp.last_video,
-    
     )
-
 
 
 @route.delete(
@@ -72,24 +76,27 @@ def add_channel(url: str, token: dict = Depends(decode_token)):
 )
 def remove_channel(url: str, token: dict = Depends(decode_token)):
     if not url.startswith("https://www.youtube.com"):
-        return HTTPException(400, "URL inválida.")
-    
-    if "@" not in url or "/channel/" in url:
-        return HTTPException(400, "URL inválida.")
+        raise HTTPException(400, "URL inválida.")
+
+    if not "@" in url or not "/channel/" in url:
+        raise HTTPException(400, "URL inválida.")
+
+    if re.match(r"^https:\/\/www\.youtube\.com\/(@|channel\/).*$", url) is None:
+        raise HTTPException(400, "URL inválida1.")
 
     current_user = get_current_user(token)
 
     channel_id = fetch_channel_id(url)
+
+    if not channel_id:
+        raise HTTPException(404, "Canal não encontrado.")
+
     channel_url = f"https://www.youtube.com/channel/{channel_id}"
     has_source = source_repo.select_by_url_and_login_id(channel_url, current_user.id)
 
     if not has_source:
         raise HTTPException(409, "Canal não encontrado.")
-    
+
     source_repo.delete(has_source.id)
-    
-    return RemoveChannelResponse(
-        success=True,
-        detail="Canal removido com sucesso."
-    )
-    
+
+    return RemoveChannelResponse(success=True, detail="Canal removido com sucesso.")
