@@ -10,3 +10,4 @@ audio_chunks
 ./cuts
 database.db
 /alembic
+/alembic/*

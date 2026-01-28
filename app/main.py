@@ -30,3 +30,10 @@ if __name__ == "__main__":
 # apresentando {content_format},
 # e público-alvo {target_audience}.
 # Lança conteúdos {upload_frequency}, buscando {viewer_benefit}.""")
+
+
+# MBLiveTV é um canal que produz vídeos sobre política, análise de eventos e debates,
+# com foco em análise política e debates,
+# apresentando transmissões ao vivo, entrevistas, vlogs,
+# e público-alvo público interessado em política e análise política.
+# Lança conteúdos diariamente, buscando informação atualizada sobre eventos políticos e debates.
