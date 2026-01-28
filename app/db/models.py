@@ -51,6 +51,12 @@ class Source(SQLModel, table=True):
     url: str | None = None
     custom_url: str | None = None
     last_video: str | None = None
+    main_topics: str | None = None
+    content_focus: str | None = None
+    content_format: str | None = None
+    target_audience: str | None = None
+    upload_frequency: str | None = None
+    viewer_benefit: str | None = None
 
     created_at: datetime = Field(
         sa_column=sa.Column(
@@ -77,6 +83,7 @@ class Source(SQLModel, table=True):
         sa_relationship_kwargs={"cascade": "all, delete-orphan"},
     )
 
+
 class Content(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     url: str | None
@@ -84,7 +91,7 @@ class Content(SQLModel, table=True):
     description: str | None
     published_at: datetime | None
     thumbnail: str | None
-    duration: int | None 
+    duration: int | None
 
     source_id: int = Field(foreign_key="source.id", nullable=False)
     source: Source | None = Relationship(back_populates="contents")

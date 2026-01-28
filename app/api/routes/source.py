@@ -1,6 +1,6 @@
 import re
 
-from api.schemas.source import RemoveSourceResponse, SourceResponse
+from api.schemas.source import RemoveSourceResponse, SourceRequest, SourceResponse
 from api.security import decode_token
 from api.utils import get_current_user
 from crud.crud_source import SourceRepository
@@ -27,6 +27,7 @@ def get_all_sources(token: dict = Depends(decode_token)):
 
     return [
         SourceResponse(
+            id=source.id,
             custom_id=source.custom_id,
             name=source.name,
             subscribe=source.subscribe,
@@ -35,6 +36,12 @@ def get_all_sources(token: dict = Depends(decode_token)):
             url=source.url,
             custom_url=source.custom_url,
             last_video=source.last_video,
+            main_topics=source.main_topics,
+            content_focus=source.content_focus,
+            content_format=source.content_format,
+            target_audience=source.target_audience,
+            upload_frequency=source.upload_frequency,
+            viewer_benefit=source.viewer_benefit,
             created_at=source.created_at,
             updated_at=source.updated_at,
         )
@@ -48,28 +55,29 @@ def get_all_sources(token: dict = Depends(decode_token)):
     description="Adiciona um canal do YouTube como fonte para o usuário autenticado.",
     response_model=SourceResponse,
 )
-def add_source(url: str, token: dict = Depends(decode_token)):
-
-    if not url.startswith("https://www.youtube.com"):
+def add_source(source: SourceRequest, token: dict = Depends(decode_token)):
+    if not source.url.startswith("https://www.youtube.com"):
         raise HTTPException(400, "URL inválida.")
 
-    if not ("@" in url or "/channel/" in url):
+    if not ("@" in source.url or "/channel/" in source.url):
         raise HTTPException(400, "URL inválida.")
 
-    if not re.match(r"^https:\/\/www\.youtube\.com\/(@|channel\/).*$", url):
+    if not re.match(r"^https:\/\/www\.youtube\.com\/(@|channel\/).*$", source.url):
         raise HTTPException(400, "URL inválida.")
 
     current_user = get_current_user(token)
 
-    if "@" in url:
-        has_source = source_repo.select_by_custom_url_and_login_id(url, current_user.id)
-    elif "/channel/" in url:
-        has_source = source_repo.select_by_url_and_login_id(url, current_user.id)
+    if "@" in source.url:
+        has_source = source_repo.select_by_custom_url_and_login_id(
+            source.url, current_user.id
+        )
+    elif "/channel/" in source.url:
+        has_source = source_repo.select_by_url_and_login_id(source.url, current_user.id)
 
     if has_source:
         raise HTTPException(409, "Canal já adicionado.")
 
-    channel_data = fetch_channel_info(url)
+    channel_data = fetch_channel_info(source.url)
     if not channel_data:
         raise HTTPException(404, "Canal não encontrado.")
 
@@ -84,9 +92,16 @@ def add_source(url: str, token: dict = Depends(decode_token)):
             custom_url=channel_data["custom_url"],
             last_video=channel_data["last_video"],
             login_id=current_user.id,
+            main_topics=source.main_topics,
+            content_focus=source.content_focus,
+            content_format=source.content_format,
+            target_audience=source.target_audience,
+            upload_frequency=source.upload_frequency,
+            viewer_benefit=source.viewer_benefit,
         )
     )
     return SourceResponse(
+        id=resp.id,
         custom_id=resp.custom_id,
         name=resp.name,
         subscribe=resp.subscribe,
@@ -97,6 +112,12 @@ def add_source(url: str, token: dict = Depends(decode_token)):
         last_video=resp.last_video,
         created_at=resp.created_at,
         updated_at=resp.updated_at,
+        main_topics=resp.main_topics,
+        content_focus=resp.content_focus,
+        content_format=resp.content_format,
+        target_audience=resp.target_audience,
+        upload_frequency=resp.upload_frequency,
+        viewer_benefit=resp.viewer_benefit,
     )
 
 
@@ -137,27 +158,29 @@ def remove_source(url: str, token: dict = Depends(decode_token)):
     description="Atualiza um canal do YouTube como fonte para o usuário autenticado.",
     response_model=SourceResponse,
 )
-def update_source(url: str, token: dict = Depends(decode_token)):
-    if not url.startswith("https://www.youtube.com"):
+def update_source(source: SourceRequest, token: dict = Depends(decode_token)):
+    if not source.url.startswith("https://www.youtube.com"):
         raise HTTPException(400, "URL inválida.")
 
-    if not ("@" in url or "/channel/" in url):
+    if not ("@" in source.url or "/channel/" in source.url):
         raise HTTPException(400, "URL inválida.")
 
-    if not re.match(r"^https:\/\/www\.youtube\.com\/(@|channel\/).*$", url):
+    if not re.match(r"^https:\/\/www\.youtube\.com\/(@|channel\/).*$", source.url):
         raise HTTPException(400, "URL inválida.")
 
     current_user = get_current_user(token)
 
-    if "@" in url:
-        has_source = source_repo.select_by_custom_url_and_login_id(url, current_user.id)
-    elif "/channel/" in url:
-        has_source = source_repo.select_by_url_and_login_id(url, current_user.id)
+    if "@" in source.url:
+        has_source = source_repo.select_by_custom_url_and_login_id(
+            source.url, current_user.id
+        )
+    elif "/channel/" in source.url:
+        has_source = source_repo.select_by_url_and_login_id(source.url, current_user.id)
 
     if not has_source:
         raise HTTPException(409, "Canal não encontrado.")
 
-    channel_data = fetch_channel_info(url)
+    channel_data = fetch_channel_info(source.url)
 
     if not channel_data:
         raise HTTPException(404, "Canal não encontrado.")
@@ -174,9 +197,16 @@ def update_source(url: str, token: dict = Depends(decode_token)):
             custom_url=channel_data["custom_url"],
             last_video=channel_data["last_video"],
             login_id=current_user.id,
+            main_topics=source.main_topics,
+            content_focus=source.content_focus,
+            content_format=source.content_format,
+            target_audience=source.target_audience,
+            upload_frequency=source.upload_frequency,
+            viewer_benefit=source.viewer_benefit,
         )
     )
     return SourceResponse(
+        id=resp.id,
         custom_id=resp.custom_id,
         name=resp.name,
         subscribe=resp.subscribe,
@@ -187,6 +217,12 @@ def update_source(url: str, token: dict = Depends(decode_token)):
         last_video=resp.last_video,
         created_at=resp.created_at,
         updated_at=resp.updated_at,
+        main_topics=resp.main_topics,
+        content_focus=resp.content_focus,
+        content_format=resp.content_format,
+        target_audience=resp.target_audience,
+        upload_frequency=resp.upload_frequency,
+        viewer_benefit=resp.viewer_benefit,
     )
 
 
@@ -205,6 +241,9 @@ def update_all_sources(token: dict = Depends(decode_token)):
 
     updated_sources = []
     for source in sources:
+        if not source.url:
+            continue
+
         channel_data = fetch_channel_info(source.url)
 
         resp = source_repo.update(
@@ -219,10 +258,17 @@ def update_all_sources(token: dict = Depends(decode_token)):
                 custom_url=channel_data["custom_url"],
                 last_video=channel_data["last_video"],
                 login_id=current_user.id,
+                main_topics=source.main_topics,
+                content_focus=source.content_focus,
+                content_format=source.content_format,
+                target_audience=source.target_audience,
+                upload_frequency=source.upload_frequency,
+                viewer_benefit=source.viewer_benefit,
             )
         )
         updated_sources.append(
             SourceResponse(
+                id=resp.id,
                 custom_id=resp.custom_id,
                 name=resp.name,
                 subscribe=resp.subscribe,
@@ -233,6 +279,12 @@ def update_all_sources(token: dict = Depends(decode_token)):
                 last_video=resp.last_video,
                 created_at=resp.created_at,
                 updated_at=resp.updated_at,
+                main_topics=resp.main_topics,
+                content_focus=resp.content_focus,
+                content_format=resp.content_format,
+                target_audience=resp.target_audience,
+                upload_frequency=resp.upload_frequency,
+                viewer_benefit=resp.viewer_benefit,
             )
         )
     return updated_sources

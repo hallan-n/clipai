@@ -1,22 +1,18 @@
 from datetime import datetime
 
-from openai import BaseModel
+from api.schemas.source import SourceResponse
+from pydantic import BaseModel
 
 
-class Cont(BaseModel):
-    custom_id: str | None
-    name: str | None
-    subscribe: str | None
-    thumbnail: str | None
-    avatar: str | None
+class Content(BaseModel):
     url: str | None
-    custom_url: str | None
-    last_video: str | None
+    title: str | None
+    description: str | None
+    published_at: datetime | None
+    thumbnail: str | None
+    duration: int | None
 
-    created_at: datetime | None
-    updated_at: datetime | None
 
-
-class RemoveSourceResponse(BaseModel):
-    success: bool | None
-    detail: str | None
+class GetContentsResponse(BaseModel):
+    source: SourceResponse
+    contents: list[Content]

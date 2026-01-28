@@ -1,4 +1,3 @@
-import requests
 from consts import OPENAI_API_KEY
 from openai import OpenAI
 from services.logger import logger
