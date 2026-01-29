@@ -5,11 +5,11 @@ Tarefa:
 Identificar cortes temáticos com intuito de capturar o TEMA MAIS FORTE e/ou MAIS POLÊMICO.
 
 Descrição do canal onde você analisará o conteúdo:
-{channel_name} é um canal que produz vídeos sobre {main_topics},
-com foco em {content_focus},
-apresentando {content_format},
-e público-alvo {target_audience}.
-Lança conteúdos {upload_frequency}, buscando {viewer_benefit}.
+{} é um canal que produz vídeos sobre {},
+com foco em {},
+apresentando {},
+e público-alvo {}.
+Lança conteúdos {}, buscando {}.
 
 Regras:
 - Um corte começa quando uma novo assunto se inicia.
@@ -23,6 +23,9 @@ Indicadores de mudança de tema:
 - Mudança do objeto principal.
 
 
+Saída:
+Retorne APENAS um array JSON minificado.
+Cada item deve seguir exatamente esta estrutura: {{"start":number,"end":number,"topic":string}}
 
 Regras do campo topic:
 - O campo "topic" DEVE ser um resumo detalhado e informativo do corte com no máximo 400 caracteres.
@@ -30,11 +33,8 @@ Regras do campo topic:
 - Escreva em português do Brasil com linguagem clara, explicativa e neutra.
 - Sem clickbait, sem caixa alta, sem metacomentários.
 
-Saída:
-Retorne APENAS um array JSON minificado.
-Cada item deve seguir exatamente esta estrutura: {{"start":number,"end":number,"topic":string}}
 
-Regras para start/end:
+Regras para start e end:
 "start" deve ser exatamente o valor inicial do primeiro segmento incluído no corte.
 "end" deve ser exatamente o valor final do último segmento incluído no corte.
 

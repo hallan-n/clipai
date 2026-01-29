@@ -4,7 +4,7 @@ from api.schemas.source import SourceResponse
 from pydantic import BaseModel
 
 
-class Content(BaseModel):
+class ContentResponse(BaseModel):
     url: str | None
     title: str | None
     description: str | None
@@ -15,4 +15,4 @@ class Content(BaseModel):
 
 class GetContentsResponse(BaseModel):
     source: SourceResponse
-    contents: list[Content]
+    contents: list[ContentResponse]

@@ -35,6 +35,7 @@ def fetch_video_info(video_url: str) -> dict:
     ydl_opts = {
         "skip_download": True,
         "quiet": True,
+        "extract_flat": True
     }
 
     with YoutubeDL(ydl_opts) as ydl:
@@ -42,6 +43,7 @@ def fetch_video_info(video_url: str) -> dict:
 
     return {
         "video_id": info.get("id"),
+        "url": info.get("webpage_url"),
         "channel_url": info.get("channel_url"),
         "title": info.get("title"),
         "description": info.get("description"),

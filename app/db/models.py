@@ -96,11 +96,19 @@ class Content(SQLModel, table=True):
     source_id: int = Field(foreign_key="source.id", nullable=False)
     source: Source | None = Relationship(back_populates="contents")
 
+    cuts: List["Cut"] = Relationship(
+        back_populates="content",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
+    )
 
-# class Cut(SQLModel, table=True):
-#     id: int | None = Field(default=None, primary_key=True)
-#     title: str | None = None
-#     start: str | None = None
-#     end: str | None = None
-#     total_duration: str | None = None
-#     describe: str | None = None
+
+class Cut(SQLModel, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    title: str | None = None
+    start: str | None = None
+    end: str | None = None
+    total_duration: str | None = None
+    describe: str | None = None
+
+    content_id: int = Field(foreign_key="content.id", nullable=False)
+    content: Content | None = Relationship(back_populates="cuts")
