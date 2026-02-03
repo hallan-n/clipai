@@ -90,7 +90,7 @@ async def github_callback(code: str) -> AccessToken:
     description="Cria um novo login local com email e senha.",
     response_model=CreateLocalLoginResponse,
 )
-def create_local_login(login: CreateLocalLoginRequest) -> CreateLocalLoginResponse:
+def create_local_login(login: CreateLocalLoginRequest):
     email_is_user = login_repo.select_by_email(login.email)
     if email_is_user:
         raise HTTPException(409, "Email em uso.")

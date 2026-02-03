@@ -2,12 +2,14 @@ import uvicorn
 from api.routes.content import route as content
 from api.routes.login import route as login
 from api.routes.source import route as source
+from api.routes.channel import route as channel
 from fastapi import FastAPI
 
 app = FastAPI()
 
 
 app.include_router(login)
+app.include_router(channel)
 app.include_router(source)
 app.include_router(content)
 
