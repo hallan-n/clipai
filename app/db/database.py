@@ -1,25 +1,33 @@
 import db.models
 from consts import DATABASE_URL
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import QueuePool
-from sqlmodel import Session, SQLModel, create_engine
+from db.models import Base
 
 
-class Connection:
-    def __init__(self):
-        engine = create_engine(
-            DATABASE_URL,
-            poolclass=QueuePool,
-            pool_size=10,
-            max_overflow=20,
-            pool_timeout=30,
-            pool_recycle=3600,
-            echo=False,
-        )
-        SQLModel.metadata.create_all(engine)
-        self._session = Session(engine)
+engine = create_engine(
+    DATABASE_URL,
+    poolclass=QueuePool,
+    pool_size=10,
+    max_overflow=20,
+    pool_timeout=30,
+    pool_recycle=3600,
+    pool_pre_ping=True,
+    echo=False,
+)
 
-    def __enter__(self):
-        return self._session
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self._session.close()
+SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
+
+
+def get_session():
+    session = SessionLocal()
+    try:
+        yield session
+    finally:
+        session.close()
+
+
+def create_tables():
+    Base.metadata.create_all(bind=engine)

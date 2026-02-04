@@ -1,128 +1,141 @@
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 from uuid import UUID, uuid4
 
 import sqlalchemy as sa
-from sqlalchemy import DateTime, func
-from sqlmodel import Field, Relationship, SQLModel
+from sqlalchemy import String, ForeignKey, DateTime, func
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
-class Login(SQLModel, table=True):
-    id: int | None = Field(default=None, primary_key=True)
-    public_id: UUID = Field(
-        default_factory=uuid4, index=True, unique=True
+class Base(DeclarativeBase):
+    pass
+
+
+class Login(Base):
+    __tablename__ = "login"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    public_id: Mapped[UUID] = mapped_column(
+        sa.Uuid, default=uuid4, unique=True, index=True, nullable=False
     )
 
-    email: str = Field(index=True, unique=True)
-    name: str | None = None
-    password: str | None = None
-    provider: str = Field(default="local")
-    provider_id: str | None = None
-    avatar_url: str | None = None
+    email: Mapped[str] = mapped_column(String, unique=True, index=True)
+    name: Mapped[Optional[str]]
+    password: Mapped[Optional[str]]
+    provider: Mapped[str] = mapped_column(default="local")
+    provider_id: Mapped[Optional[str]]
+    avatar_url: Mapped[Optional[str]]
 
-    created_at: datetime = Field(
-        sa_column=sa.Column(DateTime, nullable=False, server_default=func.now())
-    )
-    updated_at: datetime = Field(
-        sa_column=sa.Column(
-            DateTime, nullable=False, server_default=func.now(), onupdate=func.now()
-        )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, server_default=func.now(), nullable=False
     )
 
-    channels: List["Channel"] = Relationship(
-        back_populates="login",
-        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, server_default=func.now(), onupdate=func.now(), nullable=False
     )
 
-
-class Channel(SQLModel, table=True):
-    id: int | None = Field(default=None, primary_key=True)
-    custom_id: str | None = None
-    name: str | None = None
-    subscribe: str | None = None
-    thumbnail: str | None = None
-    avatar: str | None = None
-    url: str | None = None
-    custom_url: str | None = None
-
-    login_id: int = Field(foreign_key="login.id", nullable=False)
-    login: Login | None = Relationship(back_populates="channels")
-
-    created_at: datetime = Field(
-        sa_column=sa.Column(DateTime, nullable=False, server_default=func.now())
-    )
-    updated_at: datetime = Field(
-        sa_column=sa.Column(
-            DateTime, nullable=False, server_default=func.now(), onupdate=func.now()
-        )
-    )
-
-    sources: List["Source"] = Relationship(
-        back_populates="channel",
-        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
+    channels: Mapped[List["Channel"]] = relationship(
+        back_populates="login", cascade="all, delete-orphan"
     )
 
 
-class Source(SQLModel, table=True):
-    id: int | None = Field(default=None, primary_key=True)
-    custom_id: str | None = None
-    name: str | None = None
-    subscribe: str | None = None
-    thumbnail: str | None = None
-    avatar: str | None = None
-    url: str | None = None
-    custom_url: str | None = None
-    last_video: str | None = None
-    content_focus: str | None = None
-    content_format: str | None = None
-    upload_frequency: str | None = None
+class Channel(Base):
+    __tablename__ = "channel"
 
-    channel_id: int = Field(foreign_key="channel.id", nullable=False)
-    channel: Channel | None = Relationship(back_populates="sources")
+    id: Mapped[int] = mapped_column(primary_key=True)
 
-    created_at: datetime = Field(
-        sa_column=sa.Column(DateTime, nullable=False, server_default=func.now())
-    )
-    updated_at: datetime = Field(
-        sa_column=sa.Column(
-            DateTime,
-            nullable=False,
-            server_default=func.now(),
-            onupdate=func.now(),
-        )
+    custom_id: Mapped[Optional[str]]
+    name: Mapped[Optional[str]]
+    subscribe: Mapped[Optional[str]]
+    thumbnail: Mapped[Optional[str]]
+    avatar: Mapped[Optional[str]]
+    url: Mapped[Optional[str]]
+    custom_url: Mapped[Optional[str]]
+
+    login_id: Mapped[int] = mapped_column(ForeignKey("login.id"), nullable=False)
+
+    login: Mapped["Login"] = relationship(back_populates="channels")
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, server_default=func.now(), nullable=False
     )
 
-    contents: List["Content"] = Relationship(
-        back_populates="source",
-        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, server_default=func.now(), onupdate=func.now(), nullable=False
+    )
+
+    sources: Mapped[List["Source"]] = relationship(
+        back_populates="channel", cascade="all, delete-orphan"
     )
 
 
-class Content(SQLModel, table=True):
-    id: int | None = Field(default=None, primary_key=True)
-    url: str | None
-    title: str | None
-    description: str | None
-    published_at: datetime | None
-    thumbnail: str | None
-    duration: int | None
+class Source(Base):
+    __tablename__ = "source"
 
-    source_id: int = Field(foreign_key="source.id", nullable=False)
-    source: Source | None = Relationship(back_populates="contents")
+    id: Mapped[int] = mapped_column(primary_key=True)
 
-    cuts: List["Cut"] = Relationship(
-        back_populates="content",
-        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
+    custom_id: Mapped[Optional[str]]
+    name: Mapped[Optional[str]]
+    subscribe: Mapped[Optional[str]]
+    thumbnail: Mapped[Optional[str]]
+    avatar: Mapped[Optional[str]]
+    url: Mapped[Optional[str]]
+    custom_url: Mapped[Optional[str]]
+    last_video: Mapped[Optional[str]]
+    content_focus: Mapped[Optional[str]]
+    content_format: Mapped[Optional[str]]
+    upload_frequency: Mapped[Optional[str]]
+
+    channel_id: Mapped[int] = mapped_column(ForeignKey("channel.id"), nullable=False)
+
+    channel: Mapped["Channel"] = relationship(back_populates="sources")
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime, server_default=func.now(), nullable=False
+    )
+
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime, server_default=func.now(), onupdate=func.now(), nullable=False
+    )
+
+    contents: Mapped[List["Content"]] = relationship(
+        back_populates="source", cascade="all, delete-orphan"
     )
 
 
-class Cut(SQLModel, table=True):
-    id: int | None = Field(default=None, primary_key=True)
-    title: str | None = None
-    start: str | None = None
-    end: str | None = None
-    total_duration: str | None = None
-    describe: str | None = None
+class Content(Base):
+    __tablename__ = "content"
 
-    content_id: int = Field(foreign_key="content.id", nullable=False)
-    content: Content | None = Relationship(back_populates="cuts")
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    url: Mapped[Optional[str]]
+    title: Mapped[Optional[str]]
+    description: Mapped[Optional[str]]
+    published_at: Mapped[Optional[datetime]]
+    thumbnail: Mapped[Optional[str]]
+    duration: Mapped[Optional[int]]
+
+    source_id: Mapped[int] = mapped_column(ForeignKey("source.id"), nullable=False)
+
+    source: Mapped["Source"] = relationship(back_populates="contents")
+
+    cuts: Mapped[List["Cut"]] = relationship(
+        back_populates="content", cascade="all, delete-orphan"
+    )
+
+
+class Cut(Base):
+    __tablename__ = "cut"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+
+    title: Mapped[Optional[str]]
+    start: Mapped[Optional[str]]
+    end: Mapped[Optional[str]]
+    total_duration: Mapped[Optional[str]]
+    describe: Mapped[Optional[str]]
+
+    content_id: Mapped[int] = mapped_column(ForeignKey("content.id"), nullable=False)
+
+    content: Mapped["Content"] = relationship(back_populates="cuts")
