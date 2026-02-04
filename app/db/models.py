@@ -5,10 +5,13 @@ from uuid import UUID, uuid4
 import sqlalchemy as sa
 from sqlalchemy import String, ForeignKey, DateTime, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy.inspection import inspect
+
 
 
 class Base(DeclarativeBase):
-    pass
+    def to_dict(self):
+        return {c.key: getattr(self, c.key) for c in inspect(self).mapper.column_attrs}
 
 
 class Login(Base):

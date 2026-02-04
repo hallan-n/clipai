@@ -9,6 +9,7 @@ class CreateLocalLoginRequest(BaseModel):
     avatar_url: str
 
 class CreateLocalLoginResponse(BaseModel):
+    id: int
     public_id: UUID4
     email: EmailStr
     name: str
