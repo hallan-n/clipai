@@ -1,17 +1,16 @@
-import uvicorn
-from api.routes.login import route as login
-from api.routes.channel import route as channel
-from fastapi import FastAPI
-from db.database import create_tables
-
-create_tables()
-app = FastAPI()
+from youtube import download_video_temp, fetch_transcribe
+from edit_video import cut_video
+from ask_llm import ask_gpt
+import json
 
 
-app.include_router(login)
-app.include_router(channel)
+def run_pipeline(video_url: str):
+    transcribe = fetch_transcribe(video_url)
+    video_path = download_video_temp(video_url)
+    prompt = "Indentifique os principais cortes nesses segimentos: {}"
 
-if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    response = ask_gpt(prompt, [transcribe])
+    segments = json.loads(response)
 
-
+    for segment in segments:
+        cut_video(video_path, segment['start'], segment['end'], 'saida.mp4')

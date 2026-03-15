@@ -7,7 +7,8 @@ from youtube_transcript_api import YouTubeTranscriptApi
 from yt_dlp import YoutubeDL
 
 
-def fetch_transcribe(video_id: str):
+def fetch_transcribe(video_url: str):
+    video_id = video_url.split("?v=")[-1]
     try:
         segments = YouTubeTranscriptApi().fetch(video_id, languages=["pt", "pt-BR"])
 
@@ -166,3 +167,4 @@ def fetch_channel_info(channel_url: str) -> dict:
             else ""
         ),
     }
+
