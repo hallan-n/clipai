@@ -11,3 +11,4 @@ audio_chunks
 database.db
 /alembic
 /alembic/*
+/temp

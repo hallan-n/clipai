@@ -1,6 +1,6 @@
 from consts import OPENAI_API_KEY
-from openai import OpenAI
 from logger import logger
+from openai import OpenAI
 
 
 def ask_gpt(prompt: str, params: list) -> bool:

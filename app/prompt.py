@@ -22,23 +22,21 @@ Regras:
 4. Ignore trechos inicios e fins que contenham:
    - pausas
    - cumprimentos ou despedidas
-5. Cada corte deve ter entre 5 minutos e 30 minutos, se possível.
+5. Cada corte deve ter entre {1} minutos e {2} minutos, se possível.
 6. Os cortes devem ser coerentes, ou seja, não podem começar ou terminar no meio de uma ideia.
 7. Priorize cortes que funcionariam bem para YouTube.
 
 Para cada corte encontrado retorne um objeto com o seguinte formato:
 
 {{
-  "title": "título curto e chamativo do corte",
+  "title": "título curto e chamativo, apelativo, citando nome do autor das falar quando possível, com foco em SEO pra youtube",
   "start": tempo_em_segundos,
-  "end": tempo_em_segundos,
-  "reason": "por que esse trecho é interessante",
-  "summary": "resumo curto do conteúdo"
+  "end": tempo_em_segundos
 }}
 
 Retorne uma lista JSON minificada com os melhores cortes.
 
 Aqui estão os segmentos:
 
-{1}
+{3}
 """

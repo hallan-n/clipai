@@ -1,28 +1,58 @@
-from youtube import download_video_temp, fetch_transcribe
-from edit_video import cut_video, concat_videos
-from ask_llm import ask_gpt
 import json
-from prompt import prompt
+from pathlib import Path
+
+from ask_llm import ask_gpt
+from edit_video import cut_video
 from logger import logger
+from prompt import prompt
+from youtube import download_video, fetch_transcribe
 
-def run_pipeline(video_url: str):
-    # transcribe = fetch_transcribe(video_url)
-    transcribe = open("segments.json", "r").read()
 
-    # if not transcribe:
-    #     logger.error(f"Transcrição não disponível para o vídeo: {video_url}")
-    #     raise ValueError(f"Transcrição não disponível para o vídeo: {video_url}")
-    
-    # video_path = download_video_temp(video_url)
-    video_path = "/tmp/video_cz2dfzz1/video.mp4"
+def process_cuts(video_url: str, main_theme: str, min_len: int, max_len: int):
+    video_id = video_url.split("v=")[-1]
 
-    # response = ask_gpt(prompt, ["Política", str(transcribe)])
+    base_path = Path("temp") / video_id
+    cuts_path = base_path / "cuts"
+    raw_video = base_path / "raw.mp4"
+
+    cuts_path.mkdir(parents=True, exist_ok=True)
+
+    transcribe = fetch_transcribe(video_url)
+    if not transcribe:
+        logger.error(f"Transcrição não disponível para o vídeo: {video_url}")
+        raise ValueError("Transcrição não disponível")
+
+    if raw_video.exists():
+        logger.info("Vídeo já baixado!")
+        video_path = raw_video
+    else:
+        video_path = Path(download_video(video_url, str(raw_video)))
     
-    response = open("saida.json", "r").read()
-    
-    segments = json.loads(response)
+    existing_cuts = [f for f in cuts_path.iterdir() if f.is_file()]
+    if existing_cuts:
+        logger.info("Cortes já realizados")
+        return existing_cuts
+
+    response = ask_gpt(prompt, [main_theme, min_len, max_len, str(transcribe)])
+
+    try:
+        segments = json.loads(response)
+    except json.JSONDecodeError:
+        logger.error("Resposta inválida do GPT")
+        raise
+
+    cuts = []
+
     for segment in segments:
-        cut_video(video_path, segment['start'], segment['end'], f'{segment['title']}.mp4')
+        cut_path = cuts_path / f"{segment['title'].upper()}.mp4"
 
+        cut_video(
+            video_path,
+            segment["start"],
+            segment["end"],
+            cut_path
+        )
 
-run_pipeline("https://www.youtube.com/watch?v=DqtwWGL1WHQ")
+        cuts.append(cut_path)
+
+    return cuts

@@ -1,5 +1,3 @@
-import os
-import tempfile
 from datetime import datetime
 
 import feedparser
@@ -33,11 +31,7 @@ def fetch_transcribe(video_url: str):
 
 
 def fetch_video_info(video_url: str) -> dict:
-    ydl_opts = {
-        "skip_download": True,
-        "quiet": True,
-        "extract_flat": True
-    }
+    ydl_opts = {"skip_download": True, "quiet": True, "extract_flat": True}
 
     with YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(video_url, download=False)
@@ -70,14 +64,12 @@ def fetch_video_info(video_url: str) -> dict:
     }
 
 
-def download_video_temp(video_url: str) -> str:
-    temp_dir = tempfile.mkdtemp(prefix="video_")
-    output = os.path.join(temp_dir, "video.%(ext)s")
+def download_video(video_url: str, output_path: str) -> str:
 
     ydl_opts = {
         "format": "bestvideo+bestaudio/best",
         "merge_output_format": "mp4",
-        "outtmpl": output,
+        "outtmpl": output_path,
         "quiet": True,
         "noplaylist": True,
     }
@@ -85,7 +77,7 @@ def download_video_temp(video_url: str) -> str:
     with YoutubeDL(ydl_opts) as ydl:
         ydl.download([video_url])
 
-    return os.path.join(temp_dir, "video.mp4")
+    return output_path
 
 
 def fetch_video_infos(channel_id: str, limit: int = 15) -> list[dict]:
@@ -167,4 +159,3 @@ def fetch_channel_info(channel_url: str) -> dict:
             else ""
         ),
     }
-
