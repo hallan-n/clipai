@@ -153,9 +153,5 @@ def fetch_channel_info(channel_url: str) -> dict:
         "avatar": thumbnails[-1].get("url") if thumbnails else "",
         "url": info.get("channel_url"),
         "custom_url": info.get("uploader_url"),
-        "last_video": (
-            info.get("entries")[0].get("entries")[0].get("url")
-            if len(info.get("entries")) > 0
-            else ""
-        ),
+        "last_video": info.get("entries", [{}])[0].get("url", ""),
     }

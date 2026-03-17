@@ -4,3 +4,5 @@ loguru
 yt_dlp
 python-dotenv
 openai
+uvicorn
+fastapi

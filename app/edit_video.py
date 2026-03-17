@@ -1,22 +1,25 @@
 import subprocess
 
+
 def cut_video(video_path: str, start: float, end: float, output_path: str):
     duration = end - start
-
     cmd = [
         "ffmpeg",
         "-y",
-        "-ss",
-        str(start),
         "-i",
         video_path,
+        "-ss",
+        str(start),
         "-t",
         str(duration),
-        "-c",
-        "copy",
+        "-c:v",
+        "copy", 
+        "-c:a",
+        "aac",
+        "-b:a",
+        "192k",
         output_path,
     ]
-
     subprocess.run(cmd, check=True)
 
 
