@@ -11,7 +11,13 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse
 from logger import logger
 from prompt import prompt
-from youtube import download_video, fetch_transcribe, fetch_video_info, fetch_video_infos, fetch_channel_info
+from youtube import (
+    download_video,
+    fetch_transcribe,
+    fetch_video_info,
+    fetch_video_infos,
+    fetch_channel_info,
+)
 
 
 def process_cuts(video_url: str, main_theme: str, min_len: int, max_len: int):
@@ -90,13 +96,16 @@ def generate_cut(cut: Cut):
         path=zip_path, media_type="application/zip", filename="videos.zip"
     )
 
+
 @app.get("/video")
 def get_video(video_url: str):
     return fetch_video_info(video_url)
-    
+
+
 @app.get("/feed")
 def get_feed(channel_id: str, limit: int = 15):
     return fetch_video_infos(channel_id, limit)
+
 
 @app.get("/channel")
 def get_channel(channel_url: str):

@@ -13,7 +13,7 @@ def cut_video(video_path: str, start: float, end: float, output_path: str):
         "-t",
         str(duration),
         "-c:v",
-        "copy", 
+        "copy",
         "-c:a",
         "aac",
         "-b:a",
