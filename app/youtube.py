@@ -1,6 +1,20 @@
+import os
+import pickle
+import re
 from datetime import datetime
 
 import feedparser
+import requests
+from consts import (
+    YOUTUBE_API_CLIENT_SECRET_FILE,
+    YOUTUBE_API_SCOPES,
+    YOUTUBE_API_TOKEN_FILE,
+)
+from google.auth.transport.requests import Request
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaFileUpload
+from models import YouTubeVideo
 from youtube_transcript_api import YouTubeTranscriptApi
 from yt_dlp import YoutubeDL
 
@@ -80,7 +94,11 @@ def download_video(video_url: str, output_path: str) -> str:
     return output_path
 
 
-def fetch_video_infos(channel_id: str, limit: int = 15) -> list[dict]:
+def fetch_video_infos(channel_url: str, limit: int = 15) -> list[dict]:
+    html = requests.get(channel_url).text
+    regex = r"(https:\/\/www\.youtube\.com\/channel\/)(\w+)"
+    channel_id = re.search(regex, html).group(2)
+
     limit = limit if (limit > 0 and limit <= 15) else 15
     feed_url = f"https://www.youtube.com/feeds/videos.xml?channel_id={channel_id}"
     feed = feedparser.parse(feed_url)
@@ -155,3 +173,69 @@ def fetch_channel_info(channel_url: str) -> dict:
         "custom_url": info.get("uploader_url"),
         "last_video": info.get("entries", [{}])[0].get("url", ""),
     }
+
+
+def _get_credentials():
+    creds = None
+
+    if os.path.exists(YOUTUBE_API_TOKEN_FILE):
+        with open(YOUTUBE_API_TOKEN_FILE, "rb") as f:
+            creds = pickle.load(f)
+
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+        else:
+            flow = InstalledAppFlow.from_client_secrets_file(
+                YOUTUBE_API_CLIENT_SECRET_FILE, YOUTUBE_API_SCOPES
+            )
+            creds = flow.run_local_server(port=0)
+
+        with open(YOUTUBE_API_TOKEN_FILE, "wb") as f:
+            pickle.dump(creds, f)
+
+    return creds
+
+
+def upload_video(video: YouTubeVideo):
+    creds = _get_credentials()
+    youtube = build("youtube", "v3", credentials=creds)
+
+    request = youtube.videos().insert(
+        part="snippet,status",
+        body={
+            "snippet": {
+                "title": video.title,
+                "description": video.description,
+                "tags": video.tags,
+                "categoryId": video.category_id,
+            },
+            "status": {"privacyStatus": video.status},
+        },
+        media_body=MediaFileUpload(video.video_path),
+    )
+    response = request.execute()
+    video.video_id = response["id"]
+    video.published_at = response["snippet"]["publishedAt"]
+    video.channel_id = response["snippet"]["channelId"]
+
+    if video.thumb_path:
+        youtube.thumbnails().set(
+            videoId=video.video_id, media_body=MediaFileUpload(video.thumb_path)
+        ).execute()
+
+    return video
+
+
+"""
+#cortesmbl #partidomissao #mbl
+👉 Quer saber mais? Acompanhe as lives do MBL, de segunda à sexta-feira no canal:    / @mblivetv  
+
+👀 Vídeo original:    • URGENTE: VORCARO VAI DELATAR ATÉ O STF | A...  
+
+Se gostou do vídeo, não se esqueça de deixar o like e se inscrever no canal 💪
+
+Até a próxima e fique com Deus 🙏
+
+#cortesmbl #partidomissao #mbl #renansantos #mamaefalei #kimkataguiri
+"""

@@ -12,3 +12,5 @@ database.db
 /alembic
 /alembic/*
 /temp
+/profile
+token.pkl

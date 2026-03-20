@@ -1,10 +1,10 @@
 import json
 import re
 import zipfile
-import uvicorn
 from dataclasses import dataclass
 from pathlib import Path
 
+import uvicorn
 from ask_llm import ask_gpt
 from edit_video import cut_video
 from fastapi import FastAPI
@@ -13,10 +13,10 @@ from logger import logger
 from prompt import prompt
 from youtube import (
     download_video,
+    fetch_channel_info,
     fetch_transcribe,
     fetch_video_info,
     fetch_video_infos,
-    fetch_channel_info,
 )
 
 
