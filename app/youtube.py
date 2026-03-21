@@ -207,16 +207,16 @@ def upload_video(video: YouTubeVideo):
             "snippet": {
                 "title": video.title,
                 "description": video.description,
-                "tags": video.tags,
-                "categoryId": video.category_id,
             },
-            "status": {"privacyStatus": video.status},
+            "status": {
+                "privacyStatus": "private",
+                "publishAt": video.published_at,
+            },
         },
         media_body=MediaFileUpload(video.video_path),
     )
     response = request.execute()
     video.video_id = response["id"]
-    video.published_at = response["snippet"]["publishedAt"]
     video.channel_id = response["snippet"]["channelId"]
 
     if video.thumb_path:

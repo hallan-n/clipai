@@ -31,7 +31,8 @@ Para cada corte encontrado retorne um objeto com o seguinte formato:
 {{
   "title": "título curto e chamativo, apelativo, citando nome do autor das falar quando possível, com foco em SEO pra youtube",
   "start": tempo_em_segundos,
-  "end": tempo_em_segundos
+  "end": tempo_em_segundos,
+  "summary": "breve descrição do que foi tratado no trecho"
 }}
 
 Retorne uma lista JSON minificada com os melhores cortes.
