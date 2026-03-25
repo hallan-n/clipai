@@ -41,3 +41,18 @@ Aqui estão os segmentos:
 
 {3}
 """
+
+
+description = """
+{0}
+
+👉 Quer saber mais? Acompanhe as lives do MBL, de segunda à sexta-feira no canal:    https://www.youtube.com/@MBLiveTV
+
+👀 Vídeo original:    • {1}
+
+Se gostou do vídeo, não se esqueça de deixar o like e se inscrever no canal 💪
+
+Até a próxima e fique com Deus 🙏
+
+#cortesmbl #partidomissao #mbl #renansantos #mamaefalei #kimkataguiri
+"""

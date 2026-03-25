@@ -10,6 +10,9 @@ from consts import (
     YOUTUBE_API_SCOPES,
     YOUTUBE_API_TOKEN_FILE,
 )
+
+from logger import logger
+import time
 from google.auth.transport.requests import Request
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
@@ -197,9 +200,17 @@ def _get_credentials():
     return creds
 
 
+
+
 def upload_video(video: YouTubeVideo):
     creds = _get_credentials()
     youtube = build("youtube", "v3", credentials=creds)
+
+    media = MediaFileUpload(
+        video.video_path,
+        chunksize=5 * 1024 * 1024,  # 5MB
+        resumable=True,
+    )
 
     request = youtube.videos().insert(
         part="snippet,status",
@@ -213,29 +224,43 @@ def upload_video(video: YouTubeVideo):
                 "publishAt": video.published_at,
             },
         },
-        media_body=MediaFileUpload(video.video_path),
+        media_body=media,
     )
-    response = request.execute()
+
+    response = None
+
+    while response is None:
+        try:
+            status, response = request.next_chunk()
+
+            if status:
+                logger.info(f"Upload: {int(status.progress() * 100)}%")
+
+        except Exception as e:
+            logger.error(f"Erro no upload, tentando novamente...: {e}")
+            time.sleep(5)
+
     video.video_id = response["id"]
     video.channel_id = response["snippet"]["channelId"]
 
     if video.thumb_path:
         youtube.thumbnails().set(
-            videoId=video.video_id, media_body=MediaFileUpload(video.thumb_path)
+            videoId=video.video_id,
+            media_body=MediaFileUpload(video.thumb_path),
         ).execute()
 
     return video
 
 
-"""
-#cortesmbl #partidomissao #mbl
-👉 Quer saber mais? Acompanhe as lives do MBL, de segunda à sexta-feira no canal:    / @mblivetv  
+# """
+# #cortesmbl #partidomissao #mbl
+# 👉 Quer saber mais? Acompanhe as lives do MBL, de segunda à sexta-feira no canal:    / @mblivetv  
 
-👀 Vídeo original:    • URGENTE: VORCARO VAI DELATAR ATÉ O STF | A...  
+# 👀 Vídeo original:    • URGENTE: VORCARO VAI DELATAR ATÉ O STF | A...  
 
-Se gostou do vídeo, não se esqueça de deixar o like e se inscrever no canal 💪
+# Se gostou do vídeo, não se esqueça de deixar o like e se inscrever no canal 💪
 
-Até a próxima e fique com Deus 🙏
+# Até a próxima e fique com Deus 🙏
 
-#cortesmbl #partidomissao #mbl #renansantos #mamaefalei #kimkataguiri
-"""
+# #cortesmbl #partidomissao #mbl #renansantos #mamaefalei #kimkataguiri
+# """

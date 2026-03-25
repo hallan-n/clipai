@@ -1,6 +1,5 @@
 import json
 import re
-from dataclasses import dataclass
 from pathlib import Path
 
 import uvicorn
@@ -9,14 +8,15 @@ from ask_llm import ask_gpt
 from edit_video import cut_video
 from fastapi import FastAPI, HTTPException
 from logger import logger
-from prompt import prompt
+from prompt import prompt, description
 from youtube import (
     download_video,
     fetch_transcribe,
+    upload_video
 )
+from datetime import datetime, timezone
 
 
-from datetime import datetime
 
 def generate_schedule(start: datetime, end: datetime, slots: int) -> list[datetime]:
     if slots <= 0:
@@ -30,14 +30,11 @@ def generate_schedule(start: datetime, end: datetime, slots: int) -> list[dateti
 
     total = end - start
     step = total / (slots - 1)
-
+    logger.info(f"Gerando schedule para {slots} videos")
     return [start + step * i for i in range(slots)]
 
-t1 = datetime.now().replace(hour=0)
-t2 = datetime.now().replace(hour=18)
-print(generate_schedule(t1, t2, 5))
 
-def process_cuts(video_url: str, main_theme: str, min_len: int, max_len: int) -> YouTubeVideo:
+def process_cuts(video_url: str, main_theme: str, min_len: int, max_len: int) -> list[YouTubeVideo]:
     video_id = video_url.split("v=")[-1]
 
     base_path = Path("temp") / video_id
@@ -59,11 +56,6 @@ def process_cuts(video_url: str, main_theme: str, min_len: int, max_len: int) ->
         logger.info("Iniciando download do Vídeo")
         video_path = Path(download_video(video_url, str(raw_video)))
 
-    existing_cuts = [f for f in cuts_path.iterdir() if f.is_file()]
-    if existing_cuts:
-        logger.info("Cortes já realizados")
-        return existing_cuts
-
     response = ask_gpt(prompt, [main_theme, min_len, max_len, str(transcribe)])
 
     try:
@@ -81,19 +73,22 @@ def process_cuts(video_url: str, main_theme: str, min_len: int, max_len: int) ->
             YouTubeVideo(
                 video_id=video_id,
                 title=segment['title'].upper(),
-                description=segment['summary'],
+                description=description.format(segment['summary'], video_url),
                 thumb_path=None,
                 video_path=cut_path,
                 published_at=None,
-                status="public"
+                status="private"
             )
         )
     logger.info(f"{len(cuts)} Cortes processados")
     return cuts
 
 
-app = FastAPI()
+def to_iso_utc(dt: datetime) -> str:
+    return dt.astimezone(timezone.utc).isoformat().replace("+00:00", "Z")
 
+
+app = FastAPI()
 
 @app.get("/")
 def generate_cut(url: str):
@@ -101,9 +96,16 @@ def generate_cut(url: str):
         raise HTTPException("URL no formato incorreto")
     
     videos = process_cuts(url, "política", 7, 30)
-    
 
+    schedules = generate_schedule(
+        datetime.now().replace(hour=14, tzinfo=timezone.utc),
+        datetime.now().replace(hour=22, tzinfo=timezone.utc),
+        len(videos)
+    )
 
+    for schedule, video in zip(schedules, videos):
+        video.published_at = to_iso_utc(schedule)
+        upload_video(video)
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
